@@ -133,7 +133,7 @@ function AboutUsSectionComponent() {
           </motion.h2>
 
           <motion.p variants={fadeUp} className="text-lg text-slate-200/90 max-w-3xl mx-auto">
-            For over 15 years, we've been transforming houses into homes with dedication and craftsmanship.
+            For over 15 years, we&apos;ve been transforming houses into homes with dedication and craftsmanship.
           </motion.p>
         </motion.div>
 
@@ -219,7 +219,6 @@ function AboutUsSectionComponent() {
           initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition{{ duration: 0.5 }}
           className="text-center"
         >
           <h3 className="text-3xl md:text-4xl font-black text-white mb-4">Experience the Difference</h3>
