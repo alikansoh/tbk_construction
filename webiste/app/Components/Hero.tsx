@@ -247,16 +247,19 @@ export default function HeroInquiry() {
 
   return (
     <div className="relative w-full min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      {/* Optimized video with preload hint */}
+      {/* Preload critical resources */}
+      <link rel="preload" as="image" href="/hero-poster.webp" type="image/webp" />
       <link rel="preload" as="video" href="/hero1.mp4" type="video/mp4" />
+      
+      {/* Optimized video with modern poster format */}
       <video
         className="absolute inset-0 w-full h-full object-cover opacity-30"
         autoPlay
         muted
         loop
         playsInline
-        poster="/hero.png"
-        preload="auto"
+        poster="/hero-poster.webp"
+        preload="metadata"
       >
         <source src="/hero1.mp4" type="video/mp4" />
       </video>
@@ -267,8 +270,9 @@ export default function HeroInquiry() {
       <div className="absolute top-20 left-10 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl animate-pulse-slow will-change-transform" />
       <div className="absolute bottom-20 right-10 w-96 h-96 bg-red-500/15 rounded-full blur-3xl animate-pulse-slower will-change-transform" />
       
-      <div className="absolute inset-0 opacity-[0.015] mix-blend-overlay pointer-events-none" 
-           style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'3.5\' numOctaves=\'4\' /%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' /%3E%3C/svg%3E")' }} 
+      {/* Optimized noise texture with reduced opacity */}
+      <div className="absolute inset-0 opacity-[0.01] mix-blend-overlay pointer-events-none" 
+           style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'2.5\' numOctaves=\'3\' /%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\' /%3E%3C/svg%3E")' }} 
       />
 
       <div id="quotes" className="relative z-10 w-full flex flex-col items-center pt-24 md:pt-40 px-4 pb-36">
@@ -281,7 +285,7 @@ export default function HeroInquiry() {
             <span className="group-hover:tracking-wide transition-all duration-300">Available 24/7 • Fast Response</span>
           </div>
 
-          {/* Critical content for LCP - optimized rendering */}
+          {/* Critical content for LCP - optimized with font-display consideration */}
           <h1 className="text-5xl sm:text-6xl lg:text-5xl xl:text-6xl font-black text-white leading-[1.05] mb-6 tracking-tight">
             <span className="inline-block animate-fadeInUpDelay1">Professional</span>
             <br />
