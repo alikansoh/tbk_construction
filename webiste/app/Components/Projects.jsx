@@ -1,0 +1,702 @@
+'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const PROJECTS = [
+  {
+    title: 'Modern Kitchen Renovation',
+    category: 'Kitchen',
+    description: 'Complete kitchen transformation with custom cabinetry and premium finishes',
+    stats: { duration: '6 weeks', budget: '£45k' },
+    images: ['kitchen1.jpg', 'kitchen2.jpg', 'kitchen3.jpg']
+  },
+  {
+    title: 'Luxury Bathroom Suite',
+    category: 'Bathroom',
+    description: 'Spa-inspired bathroom with premium fixtures and elegant tilework',
+    stats: { duration: '4 weeks', budget: '£28k' },
+    images: ['bathroom1.jpg', 'bathroom2.jpg', 'bathroom3.jpg', 'bathroom4.jpg']
+  },
+  {
+    title: 'Home Extension',
+    category: 'Extension',
+    description: 'Two-story extension adding 800 sq ft of living space',
+    stats: { duration: '12 weeks', budget: '£95k' },
+    images: ['extension1.jpg', 'extension2.jpg', 'extension3.jpg']
+  },
+  {
+    title: 'Garden Landscaping',
+    category: 'Outdoor',
+    description: 'Complete garden redesign with patio, deck, and water features',
+    stats: { duration: '8 weeks', budget: '£32k' },
+    images: ['garden1.jpg', 'garden2.jpg', 'garden3.jpg', 'garden4.jpg', 'garden5.jpg']
+  },
+  {
+    title: 'Loft Conversion',
+    category: 'Conversion',
+    description: 'Transformed unused loft into beautiful master bedroom suite',
+    stats: { duration: '10 weeks', budget: '£52k' },
+    images: ['loft1.jpg', 'loft2.jpg', 'loft3.jpg']
+  },
+  {
+    title: 'Victorian Restoration',
+    category: 'Renovation',
+    description: 'Period property restoration preserving original features',
+    stats: { duration: '16 weeks', budget: '£78k' },
+    images: ['victorian1.jpg', 'victorian2.jpg', 'victorian3.jpg', 'victorian4.jpg']
+  },
+  {
+    title: 'Modern Open Plan Living',
+    category: 'Interior',
+    description: 'Contemporary open-plan design with seamless indoor-outdoor flow',
+    stats: { duration: '8 weeks', budget: '£42k' },
+    images: ['openplan1.jpg', 'openplan2.jpg', 'openplan3.jpg']
+  }
+];
+
+// Animated Counter Component
+const AnimatedCounter = ({ value, duration = 1000 }) => {
+  const [count, setCount] = useState(0);
+  const countRef = useRef(0);
+
+  useEffect(() => {
+    const startTime = Date.now();
+    const endValue = typeof value === 'string' ? parseInt(value.replace(/\D/g, '')) : value;
+    
+    const animate = () => {
+      const now = Date.now();
+      const progress = Math.min((now - startTime) / duration, 1);
+      
+      // Easing function for smooth animation
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      const current = Math.floor(easeOutQuart * endValue);
+      
+      countRef.current = current;
+      setCount(current);
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+    
+    animate();
+  }, [value, duration]);
+
+  // Format the number back to the original format
+  if (typeof value === 'string') {
+    if (value.includes('+')) return `${count}+`;
+    if (value.includes('%')) return `${count}%`;
+    if (value.includes('/')) return value; // Keep 24/7 as is
+  }
+  
+  return count;
+};
+
+export default function ProjectsSection() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [direction, setDirection] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const nextSlide = () => {
+    setDirection(1);
+    setCurrentIndex((prev) => (prev + 1) % PROJECTS.length);
+  };
+
+  const prevSlide = () => {
+    setDirection(-1);
+    setCurrentIndex((prev) => (prev - 1 + PROJECTS.length) % PROJECTS.length);
+  };
+
+  const goToSlide = (index) => {
+    setDirection(index > currentIndex ? 1 : -1);
+    setCurrentIndex(index);
+  };
+
+  const openProjectModal = (project, index) => {
+    setSelectedProject(project);
+    setCurrentImageIndex(0);
+    setIsModalOpen(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedProject(null);
+    setCurrentImageIndex(0);
+    document.body.style.overflow = 'unset';
+  };
+
+  const nextImage = () => {
+    if (selectedProject) {
+      setCurrentImageIndex((prev) => (prev + 1) % selectedProject.images.length);
+    }
+  };
+
+  const prevImage = () => {
+    if (selectedProject) {
+      setCurrentImageIndex((prev) => (prev - 1 + selectedProject.images.length) % selectedProject.images.length);
+    }
+  };
+
+  // Auto-play functionality
+  useEffect(() => {
+    if (!isAutoPlaying) return;
+    
+    const interval = setInterval(() => {
+      nextSlide();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [currentIndex, isAutoPlaying]);
+
+  const slideVariants = {
+    enter: (direction) => ({
+      x: direction > 0 ? '100%' : '-100%',
+      opacity: 0,
+      scale: 0.95,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      scale: 1,
+    },
+    exit: (direction) => ({
+      x: direction > 0 ? '-100%' : '100%',
+      opacity: 0,
+      scale: 0.95,
+    }),
+  };
+
+  const currentProject = PROJECTS[currentIndex];
+
+  return (
+    <section className="relative w-full bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-40 right-10 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div className="absolute bottom-40 left-10 w-96 h-96 bg-red-500/15 rounded-full blur-3xl animate-pulse-slower"></div>
+      </div>
+
+      {/* Noise texture */}
+      <div className="absolute inset-0 opacity-[0.015] mix-blend-overlay pointer-events-none" 
+           style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'3.5\' numOctaves=\'4\' /%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' /%3E%3C/svg%3E")' }} 
+      />
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 lg:py-20">
+        {/* Section Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12 sm:mb-16"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center bg-gradient-to-r from-orange-500/15 to-red-500/15 backdrop-blur-md border border-orange-400/30 text-orange-200 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs font-bold shadow-[0_0_30px_rgba(249,115,22,0.3)] mb-6 sm:mb-8"
+          >
+            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z"/>
+              <path fillRule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clipRule="evenodd"/>
+            </svg>
+            OUR PORTFOLIO
+          </motion.div>
+          
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white mb-3 sm:mb-4 tracking-tight leading-[1.1] px-4">
+            Transforming Visions into
+            <span className="block mt-1 sm:mt-2 bg-gradient-to-r from-orange-300 via-orange-400 to-red-400 bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(249,115,22,0.5)]">
+              Beautiful Reality
+            </span>
+          </h2>
+          
+          <p className="text-base sm:text-lg text-slate-200/90 max-w-2xl mx-auto leading-relaxed px-4">
+            Explore our collection of completed projects showcasing quality craftsmanship and attention to detail
+          </p>
+        </motion.div>
+
+        {/* Slider Container */}
+        <div className="relative">
+          {/* Main Slide */}
+          <div 
+            className="relative h-[550px] sm:h-[600px] md:h-[650px] lg:h-[600px] rounded-xl sm:rounded-2xl lg:rounded-3xl overflow-hidden"
+            onMouseEnter={() => setIsAutoPlaying(false)}
+            onMouseLeave={() => setIsAutoPlaying(true)}
+          >
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div
+                key={currentIndex}
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{
+                  x: { type: "spring", stiffness: 250, damping: 35 },
+                  opacity: { duration: 0.4 },
+                  scale: { duration: 0.4 },
+                }}
+                className="absolute inset-0"
+              >
+                <div className="relative w-full h-full bg-white/5 backdrop-blur-md border border-white/10 rounded-xl sm:rounded-2xl lg:rounded-3xl overflow-hidden shadow-[0_20px_80px_rgba(0,0,0,0.5)]">
+                  {/* Image Section */}
+                  <div className="relative h-3/5 sm:h-2/3 bg-slate-800">
+                    <div className="absolute inset-0 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 flex items-center justify-center">
+                      <svg className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent"></div>
+                    
+                    {/* Category Badge */}
+                    <div className="absolute top-4 left-4 sm:top-6 sm:left-6 bg-gradient-to-r from-orange-500 to-red-500 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-[0_0_30px_rgba(249,115,22,0.6)]">
+                      <span className="text-xs sm:text-sm font-bold text-white">{currentProject.category}</span>
+                    </div>
+
+                    {/* Project Number */}
+                    <div className="absolute top-4 right-4 sm:top-6 sm:right-6 bg-white/10 backdrop-blur-md border border-white/20 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full overflow-hidden">
+                      <div className="flex items-center gap-1">
+                        <AnimatePresence mode="wait">
+                          <motion.span
+                            key={currentIndex}
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -20, opacity: 0 }}
+                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                            className="text-xs sm:text-sm font-bold text-white inline-block"
+                          >
+                            {String(currentIndex + 1).padStart(2, '0')}
+                          </motion.span>
+                        </AnimatePresence>
+                        <span className="text-xs sm:text-sm font-bold text-white/70">/</span>
+                        <span className="text-xs sm:text-sm font-bold text-white/70">
+                          {String(PROJECTS.length).padStart(2, '0')}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Content Section */}
+                  <div className="relative h-2/5 sm:h-1/3 p-4 sm:p-6 lg:p-8 flex flex-col justify-center">
+                    <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 items-start lg:items-center">
+                      <div>
+                        <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-white mb-2 leading-tight">
+                          {currentProject.title}
+                        </h3>
+                        <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+                          {currentProject.description}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col gap-3">
+                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                          <div className="bg-white/5 backdrop-blur-sm rounded-lg sm:rounded-xl p-2.5 sm:p-3 lg:p-4 border border-white/10">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 rounded-lg bg-orange-500/20 flex items-center justify-center border border-orange-400/30 flex-shrink-0">
+                                <svg className="w-4 h-4 sm:w-4.5 sm:h-4.5 lg:w-5 lg:h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-xs text-slate-400 font-medium">Duration</div>
+                                <div className="text-white font-bold text-sm sm:text-base lg:text-lg truncate">{currentProject.stats.duration}</div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="bg-white/5 backdrop-blur-sm rounded-lg sm:rounded-xl p-2.5 sm:p-3 lg:p-4 border border-white/10">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 rounded-lg bg-orange-500/20 flex items-center justify-center border border-orange-400/30 flex-shrink-0">
+                                <svg className="w-4 h-4 sm:w-4.5 sm:h-4.5 lg:w-5 lg:h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-xs text-slate-400 font-medium">Investment</div>
+                                <div className="text-white font-bold text-sm sm:text-base lg:text-lg truncate">{currentProject.stats.budget}</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <motion.button
+                          onClick={() => openProjectModal(currentProject, currentIndex)}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-2 sm:py-2.5 lg:py-3 px-3 sm:px-4 rounded-lg shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] transition-all flex items-center justify-center gap-2"
+                        >
+                          <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                          <span className="text-xs sm:text-sm lg:text-base truncate">View Project ({currentProject.images.length} photos)</span>
+                        </motion.button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Navigation Arrows */}
+            <button
+              onClick={prevSlide}
+              className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 border border-white/20 flex items-center justify-center transition-all hover:scale-110 z-10 group"
+            >
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button
+              onClick={nextSlide}
+              className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 border border-white/20 flex items-center justify-center transition-all hover:scale-110 z-10 group"
+            >
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Thumbnail Navigation - Infinite Loop for Mobile */}
+          <div className="mt-6 sm:mt-8">
+            <div className="relative">
+              {/* Desktop: Standard Grid */}
+              <div className="hidden sm:flex justify-center gap-3 flex-wrap">
+                {PROJECTS.map((project, index) => (
+                  <motion.button
+                    key={index}
+                    onClick={() => goToSlide(index)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`relative flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all duration-300 ${
+                      index === currentIndex
+                        ? 'border-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.6)]'
+                        : 'border-white/20 hover:border-white/40'
+                    }`}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900"></div>
+                    {index === currentIndex && (
+                      <motion.div 
+                        layoutId="activeSlide"
+                        className="absolute inset-0 bg-orange-500/20"
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      />
+                    )}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className={`font-bold text-sm transition-colors ${
+                        index === currentIndex ? 'text-orange-300' : 'text-white'
+                      }`}>
+                        {index + 1}
+                      </span>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+
+              {/* Mobile: Infinite Loop Slider */}
+              <div className="sm:hidden relative overflow-hidden">
+                <div className="overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory">
+                  <div className="flex gap-2 px-4 pb-2">
+                    {/* Triple the array for seamless loop */}
+                    {[...PROJECTS, ...PROJECTS, ...PROJECTS].map((project, idx) => {
+                      const actualIndex = idx % PROJECTS.length;
+                      return (
+                        <motion.button
+                          key={`${actualIndex}-${idx}`}
+                          onClick={() => goToSlide(actualIndex)}
+                          whileTap={{ scale: 0.95 }}
+                          className={`relative flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all duration-300 snap-center ${
+                            actualIndex === currentIndex
+                              ? 'border-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.6)]'
+                              : 'border-white/20'
+                          }`}
+                        >
+                          <div className="absolute inset-0 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900"></div>
+                          {actualIndex === currentIndex && (
+                            <div className="absolute inset-0 bg-orange-500/20"></div>
+                          )}
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className={`font-bold text-xs transition-colors ${
+                              actualIndex === currentIndex ? 'text-orange-300' : 'text-white'
+                            }`}>
+                              {actualIndex + 1}
+                            </span>
+                          </div>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.3 }}
+          className="mt-12 sm:mt-16 lg:mt-20 grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
+        >
+          {[
+            { number: '500+', label: 'Projects Completed', icon: 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z' },
+            { number: '98%', label: 'Client Satisfaction', icon: 'M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
+            { number: '15+', label: 'Years Experience', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
+            { number: '24/7', label: 'Support Available', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
+          ].map((stat, index) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+              className="relative bg-white/5 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-white/10 hover:border-orange-400/30 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_15px_50px_rgba(249,115,22,0.2)] transition-all duration-300 group text-center"
+            >
+              <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center border border-orange-400/30 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(249,115,22,0.4)] transition-all">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={stat.icon} />
+                </svg>
+              </div>
+              <div className="text-2xl sm:text-3xl font-black text-white mb-1 sm:mb-2 group-hover:text-orange-300 transition-colors">
+                <AnimatedCounter value={stat.number} />
+              </div>
+              <div className="text-xs sm:text-sm text-slate-300 font-medium">
+                {stat.label}
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Bottom CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.5 }}
+          className="mt-12 sm:mt-16 text-center"
+        >
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-gradient-to-r from-orange-500 via-orange-600 to-red-500 text-white font-bold py-3 px-8 sm:py-4 sm:px-10 rounded-xl shadow-[0_0_40px_rgba(249,115,22,0.6)] hover:shadow-[0_0_60px_rgba(249,115,22,0.8)] transition-all inline-flex items-center gap-2 sm:gap-3 group"
+          >
+            <span className="text-base sm:text-lg">Start Your Project</span>
+            <svg
+              className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </motion.button>
+        </motion.div>
+      </div>
+
+      {/* Project Modal */}
+      <AnimatePresence>
+        {isModalOpen && selectedProject && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
+            onClick={closeModal}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 25 }}
+              className="relative w-full max-w-6xl max-h-[95vh] bg-slate-900/95 backdrop-blur-xl rounded-xl sm:rounded-2xl border border-white/10 shadow-[0_20px_80px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button
+                onClick={closeModal}
+                className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 border border-white/20 flex items-center justify-center transition-all hover:scale-110 group"
+              >
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              <div className="grid md:grid-cols-2 gap-4 sm:gap-6 p-4 sm:p-6 overflow-y-auto">
+                {/* Image Gallery Side */}
+                <div className="space-y-3 sm:space-y-4">
+                  {/* Main Image */}
+                  <div className="relative h-64 sm:h-80 md:h-96 rounded-lg sm:rounded-xl overflow-hidden bg-slate-800">
+                    <div className="absolute inset-0 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 flex items-center justify-center">
+                      <div className="text-center px-4">
+                        <svg className="w-16 h-16 sm:w-20 sm:h-20 text-slate-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <div className="text-slate-400 text-xs sm:text-sm font-medium">
+                          Image {currentImageIndex + 1} of {selectedProject.images.length}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Navigation Arrows */}
+                    {selectedProject.images.length > 1 && (
+                      <>
+                        <button
+                          onClick={prevImage}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/50 backdrop-blur-md hover:bg-black/70 border border-white/20 flex items-center justify-center transition-all hover:scale-110 z-10"
+                        >
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={nextImage}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/50 backdrop-blur-md hover:bg-black/70 border border-white/20 flex items-center justify-center transition-all hover:scale-110 z-10"
+                        >
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Thumbnail Grid */}
+                  <div className="grid grid-cols-4 gap-2">
+                    {selectedProject.images.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentImageIndex(index)}
+                        className={`relative aspect-square rounded-md sm:rounded-lg overflow-hidden border-2 transition-all ${
+                          index === currentImageIndex
+                            ? 'border-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.5)]'
+                            : 'border-white/20 hover:border-white/40'
+                        }`}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">{index + 1}</span>
+                        </div>
+                        {index === currentImageIndex && (
+                          <div className="absolute inset-0 bg-orange-500/20"></div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Project Details Side */}
+                <div className="space-y-4 sm:space-y-6">
+                  <div>
+                    <div className="inline-flex items-center bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-400/30 text-orange-300 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs font-bold mb-3 sm:mb-4">
+                      {selectedProject.category}
+                    </div>
+                    <h3 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-3 sm:mb-4 leading-tight">
+                      {selectedProject.title}
+                    </h3>
+                    <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+                      {selectedProject.description}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                    <div className="bg-white/5 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 border border-white/10">
+                      <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-orange-500/20 flex items-center justify-center border border-orange-400/30 flex-shrink-0">
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs text-slate-400 font-medium">Duration</div>
+                          <div className="text-white font-bold text-base sm:text-lg truncate">{selectedProject.stats.duration}</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-white/5 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 border border-white/10">
+                      <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-orange-500/20 flex items-center justify-center border border-orange-400/30 flex-shrink-0">
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs text-slate-400 font-medium">Investment</div>
+                          <div className="text-white font-bold text-base sm:text-lg truncate">{selectedProject.stats.budget}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white/5 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 border border-white/10">
+                    <h4 className="text-white font-bold mb-2 sm:mb-3 text-sm sm:text-base">Project Highlights</h4>
+                    <ul className="space-y-1.5 sm:space-y-2">
+                      {[
+                        'Premium materials and finishes',
+                        'Expert craftsmanship throughout',
+                        'On-time delivery and budget',
+                        'Full project management',
+                        '2-year workmanship guarantee'
+                      ].map((highlight, i) => (
+                        <li key={i} className="flex items-start gap-2 text-slate-300 text-xs sm:text-sm">
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-orange-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span>{highlight}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="pt-2 sm:pt-4">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg sm:rounded-xl shadow-[0_0_30px_rgba(249,115,22,0.5)] hover:shadow-[0_0_40px_rgba(249,115,22,0.7)] transition-all flex items-center justify-center gap-2"
+                    >
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                      </svg>
+                      <span className="text-sm sm:text-base">Start Similar Project</span>
+                    </motion.button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <style>{`
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 0.2; transform: scale(1); }
+          50% { opacity: 0.3; transform: scale(1.05); }
+        }
+        @keyframes pulse-slower {
+          0%, 100% { opacity: 0.15; transform: scale(1); }
+          50% { opacity: 0.25; transform: scale(1.08); }
+        }
+        .animate-pulse-slow { animation: pulse-slow 8s ease-in-out infinite; }
+        .animate-pulse-slower { animation: pulse-slower 10s ease-in-out infinite; }
+        
+        /* Hide scrollbar but keep functionality */
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+          scroll-behavior: smooth;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        
+        /* Smooth touch scrolling on mobile */
+        .scrollbar-hide {
+          -webkit-overflow-scrolling: touch;
+        }
+      `}</style>
+    </section>
+  );
+}

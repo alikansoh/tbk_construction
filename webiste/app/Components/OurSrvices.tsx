@@ -78,13 +78,16 @@ export default function ServicesSection() {
         {/* Section Header with Hero-style Typography */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
           className="text-center mb-16"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
             className="inline-flex items-center bg-gradient-to-r from-orange-500/15 to-red-500/15 backdrop-blur-md border border-orange-400/30 text-orange-200 px-5 py-2.5 rounded-full text-xs font-bold shadow-[0_0_30px_rgba(249,115,22,0.3)] mb-8"
           >
             <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -94,16 +97,28 @@ export default function ServicesSection() {
             OUR SERVICES
           </motion.div>
           
-          <h2 className="text-5xl md:text-6xl font-black text-white mb-4 tracking-tight leading-[1.1]">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="text-5xl md:text-6xl font-black text-white mb-4 tracking-tight leading-[1.1]"
+          >
             Professional Solutions for
             <span className="block mt-2 bg-gradient-to-r from-orange-300 via-orange-400 to-red-400 bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(249,115,22,0.5)]">
               Every Project
             </span>
-          </h2>
+          </motion.h2>
           
-          <p className="text-lg text-slate-200/90 max-w-2xl mx-auto leading-relaxed">
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="text-lg text-slate-200/90 max-w-2xl mx-auto leading-relaxed"
+          >
             From small repairs to complete renovations, our skilled professionals deliver exceptional results
-          </p>
+          </motion.p>
         </motion.div>
 
         {/* Enhanced Services Grid */}
@@ -112,8 +127,13 @@ export default function ServicesSection() {
             <Link key={service.title} href={service.link}>
               <motion.div
                 initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1, duration: 0.6, type: "spring" }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ 
+                  delay: index * 0.1, 
+                  duration: 0.6, 
+                  ease: [0.25, 0.4, 0.25, 1]
+                }}
                 onHoverStart={() => setHoveredIndex(index)}
                 onHoverEnd={() => setHoveredIndex(null)}
                 whileHover={{ y: -8 }}
@@ -136,6 +156,7 @@ export default function ServicesSection() {
                     <motion.div
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: hoveredIndex === index ? 1 : 0, x: hoveredIndex === index ? 0 : 20 }}
+                      transition={{ duration: 0.3 }}
                       className="absolute top-4 right-4 bg-gradient-to-r from-orange-500 to-red-500 px-3 py-1.5 rounded-full shadow-[0_0_30px_rgba(249,115,22,0.6)]"
                     >
                       <span className="text-xs font-bold text-white">Premium</span>
@@ -157,11 +178,8 @@ export default function ServicesSection() {
                     {/* Features */}
                     <ul className="space-y-2.5 mb-6">
                       {service.features.map((feature, i) => (
-                        <motion.li
+                        <li
                           key={feature}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1 + i * 0.1 }}
                           className="flex items-center text-sm text-slate-200 group/item"
                         >
                           <div className="flex-shrink-0 w-5 h-5 rounded-md bg-gradient-to-br from-orange-500/30 to-red-500/30 flex items-center justify-center mr-3 border border-orange-400/30 group-hover/item:scale-110 group-hover/item:shadow-[0_0_15px_rgba(249,115,22,0.4)] transition-all">
@@ -170,7 +188,7 @@ export default function ServicesSection() {
                             </svg>
                           </div>
                           <span className="font-medium">{feature}</span>
-                        </motion.li>
+                        </li>
                       ))}
                     </ul>
 
@@ -203,8 +221,9 @@ export default function ServicesSection() {
         {/* Enhanced Bottom CTA - Hero Style */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
           className="mt-20 relative"
         >
           <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-2xl border border-white/20 rounded-3xl p-10 shadow-[0_20px_80px_rgba(0,0,0,0.5)] hover:shadow-[0_25px_100px_rgba(249,115,22,0.2)] transition-all duration-500 relative overflow-hidden group">
@@ -231,12 +250,11 @@ export default function ServicesSection() {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="bg-gradient-to-r  cursor-pointer from-orange-500 via-orange-600 to-red-500 text-white font-bold py-4 px-8 rounded-xl shadow-[0_0_40px_rgba(249,115,22,0.6)] hover:shadow-[0_0_60px_rgba(249,115,22,0.8)] transition-all flex items-center gap-3 group/cta"
+                  className="bg-gradient-to-r cursor-pointer from-orange-500 via-orange-600 to-red-500 text-white font-bold py-4 px-8 rounded-xl shadow-[0_0_40px_rgba(249,115,22,0.6)] hover:shadow-[0_0_60px_rgba(249,115,22,0.8)] transition-all flex items-center gap-3 group/cta"
                   onClick={() => {
                     if (window.innerWidth >= 1024) {
                       window.location.href = '#quotes';
                     } else {
-                      // For mobile screens
                       window.location.href = '/contact';
                     }
                   }}
@@ -244,7 +262,7 @@ export default function ServicesSection() {
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  <span>Get Free quote</span>
+                  <span>Get Free Quote</span>
                   <svg
                     className="w-4 h-4 group-hover/cta:translate-x-1 transition-transform"
                     fill="none"
@@ -254,23 +272,22 @@ export default function ServicesSection() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
                 </motion.button>
-                <a href="tel:07340170864" >
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="bg-white/10 backdrop-blur-md cursor-pointer hover:bg-white/15 border border-white/30 text-white font-bold py-4 px-8 rounded-xl transition-all shadow-lg flex items-center gap-3"
-                >
-                  <svg className="w-5 h-5 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                    />
-                  </svg>
-                  <span>  
-                  07340170864</span>
-                </motion.button>
+                <a href="tel:07340170864">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-white/10 backdrop-blur-md cursor-pointer hover:bg-white/15 border border-white/30 text-white font-bold py-4 px-8 rounded-xl transition-all shadow-lg flex items-center gap-3"
+                  >
+                    <svg className="w-5 h-5 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                      />
+                    </svg>
+                    <span>07340170864</span>
+                  </motion.button>
                 </a>
               </div>
 
@@ -298,7 +315,7 @@ export default function ServicesSection() {
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd"/>
                     </svg>
                   </div>
-                  <span className="font-semibold" >Free Estimates</span>
+                  <span className="font-semibold">Free Estimates</span>
                 </div>
               </div>
             </div>
