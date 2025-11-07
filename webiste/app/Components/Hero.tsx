@@ -248,7 +248,7 @@ export default function HeroInquiry() {
   return (
     <div className="relative w-full min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Preload critical resources */}
-      <link rel="preload" as="image" href="/hero.png" type="image/webp" />
+      <link rel="preload" as="image" href="/hero-poster.webp" type="image/webp" />
       <link rel="preload" as="video" href="/hero1.mp4" type="video/mp4" />
       
       {/* Optimized video with modern poster format */}
