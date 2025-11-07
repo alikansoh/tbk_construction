@@ -1,14 +1,21 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-const SERVICES = [
+// === Improvements made (see chat for short summary):
+// - Stable submit handler that doesn't change identity on every keystroke (uses refs for latest values)
+// - Avoid unnecessary video download on small screens / when user prefers reduced motion
+// - Memoized style object for the noise background to avoid new inline style object each render
+// - Kept FormFields memoized, reduced prop churn by keeping handlers stable
+// - Minor cleanup to timers/refs to avoid leaks
+
+const SERVICES = Object.freeze([
   { name: 'Home Maintenance', icon: '🏠' },
   { name: 'Kitchen Remodeling', icon: '🔨' },
   { name: 'Flooring', icon: '📐' },
   { name: 'Electrical Work', icon: '⚡' },
   { name: 'Plumbing', icon: '🔧' },
-];
+]);
 
 const NOISE_BG = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='3.5' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noiseFilter)' /%3E%3C/svg%3E")`;
 
@@ -175,36 +182,86 @@ const FormFields = React.memo(
     prev.postcode === next.postcode &&
     prev.service === next.service &&
     prev.loading === next.loading &&
-    prev.setName === next.setName &&
-    prev.setEmail === next.setEmail &&
-    prev.setMobile === next.setMobile &&
-    prev.setPostcode === next.setPostcode &&
-    prev.setService === next.setService &&
     prev.handleSubmit === next.handleSubmit &&
     prev.onInputKeyDown === next.onInputKeyDown
 );
 
 export default function HeroInquiry() {
+  // form states (kept for controlled inputs)
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [mobile, setMobile] = useState('');
   const [postcode, setPostcode] = useState('');
   const [service, setService] = useState('');
+
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'error' | 'success'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const [showModal, setShowModal] = useState(false);
 
+  // Refs to hold latest field values so submit handler can stay stable
+  const nameRef = useRef(name);
+  const emailRef = useRef(email);
+  const mobileRef = useRef(mobile);
+  const postcodeRef = useRef(postcode);
+  const serviceRef = useRef(service);
+
+  // Keep refs in sync synchronously on change to avoid extra effect re-renders
+  const setNameAndRef = useCallback((v: string) => {
+    nameRef.current = v;
+    setName(v);
+  }, []);
+  const setEmailAndRef = useCallback((v: string) => {
+    emailRef.current = v;
+    setEmail(v);
+  }, []);
+  const setMobileAndRef = useCallback((v: string) => {
+    mobileRef.current = v;
+    setMobile(v);
+  }, []);
+  const setPostcodeAndRef = useCallback((v: string) => {
+    postcodeRef.current = v;
+    setPostcode(v);
+  }, []);
+  const setServiceAndRef = useCallback((v: string) => {
+    serviceRef.current = v;
+    setService(v);
+  }, []);
+
+  // stable timer ref
   const timerRef = useRef<number | null>(null);
-  const submitRef = useRef<() => void>(() => {});
 
+  // Don't re-create the noise style object on each render (reduces style object churn)
+  const noiseStyle = useMemo(() => ({ backgroundImage: NOISE_BG }), []);
+
+  // Avoid loading the hero video on small screens or when user prefers reduced motion
+  const [showVideo, setShowVideo] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mq = window.matchMedia('(min-width: 768px)');
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => {
+      setShowVideo(!reduce.matches && mq.matches);
+    };
+    update();
+    // modern event listeners
+    mq.addEventListener?.('change', update);
+    reduce.addEventListener?.('change', update);
+    return () => {
+      mq.removeEventListener?.('change', update);
+      reduce.removeEventListener?.('change', update);
+    };
+  }, []);
+
+  // stable submit handler: reads latest values from refs so its identity is stable (no deps)
   const handleSubmit = useCallback(() => {
-    const trimmedName = name.trim();
-    const trimmedPostcode = postcode.trim();
-    const trimmedEmail = email.trim();
-    const trimmedMobile = mobile.trim();
+    const trimmedName = (nameRef.current || '').trim();
+    const trimmedPostcode = (postcodeRef.current || '').trim();
+    const trimmedEmail = (emailRef.current || '').trim();
+    const trimmedMobile = (mobileRef.current || '').trim();
+    const selectedService = (serviceRef.current || '').trim();
 
-    if (!trimmedName || !trimmedPostcode || !service) {
+    if (!trimmedName || !trimmedPostcode || !selectedService) {
       setErrorMsg('Please enter your name, postcode, and select a service.');
       setStatus('error');
       return;
@@ -220,30 +277,40 @@ export default function HeroInquiry() {
     setErrorMsg('');
     setStatus('idle');
 
+    // simulate network latency and then clear form
+    // Keep a single timer reference to avoid leaks
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+
     timerRef.current = window.setTimeout(() => {
+      // clear both state and refs
       setName('');
       setEmail('');
       setMobile('');
       setPostcode('');
       setService('');
+      nameRef.current = '';
+      emailRef.current = '';
+      mobileRef.current = '';
+      postcodeRef.current = '';
+      serviceRef.current = '';
+
       setStatus('success');
       setShowModal(false);
       setLoading(false);
       timerRef.current = null;
     }, 1500);
-  }, [name, email, mobile, postcode, service]);
+  }, []);
 
-  // keep submitRef updated with latest handleSubmit so stableOnInputKeyDown can call it without stale closures
-  useEffect(() => {
-    submitRef.current = handleSubmit;
-  }, [handleSubmit]);
-
+  // stable onKeyDown that uses stable handleSubmit
   const stableOnInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      submitRef.current();
+      handleSubmit();
     }
-  }, []);
+  }, [handleSubmit]);
 
   const openModal = useCallback(() => setShowModal(true), []);
   const closeModal = useCallback(() => setShowModal(false), []);
@@ -262,23 +329,25 @@ export default function HeroInquiry() {
 
   return (
     <div className="relative w-full min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <video
-        className="absolute inset-0 w-full h-full object-cover opacity-30"
-        autoPlay
-        muted
-        loop
-        playsInline
-        poster="/hero.png"
-      >
-        <source src="/hero1.mp4" type="video/mp4" />
-      </video>
+      {showVideo && (
+        <video
+          className="absolute inset-0 w-full h-full object-cover opacity-30"
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster="/hero.png"
+        >
+          <source src="/hero1.mp4" type="video/mp4" />
+        </video>
+      )}
 
       <div className="absolute inset-0 " />
 
       <div className="absolute top-20 left-10 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl animate-pulse-slow" />
       <div className="absolute bottom-20 right-10 w-96 h-96 bg-red-500/15 rounded-full blur-3xl animate-pulse-slower" />
 
-      <div className="absolute inset-0 opacity-[0.015] mix-blend-overlay pointer-events-none" style={{ backgroundImage: NOISE_BG }} />
+      <div className="absolute inset-0 opacity-[0.015] mix-blend-overlay pointer-events-none" style={noiseStyle} />
 
       <div id="quotes" className="relative z-10 w-full flex flex-col items-center pt-24 md:pt-40 px-4 pb-36">
         <div className="text-center mb-12 animate-fadeInUp">
@@ -330,11 +399,11 @@ export default function HeroInquiry() {
                 postcode={postcode}
                 service={service}
                 loading={loading}
-                setName={setName}
-                setEmail={setEmail}
-                setMobile={setMobile}
-                setPostcode={setPostcode}
-                setService={setService}
+                setName={setNameAndRef}
+                setEmail={setEmailAndRef}
+                setMobile={setMobileAndRef}
+                setPostcode={setPostcodeAndRef}
+                setService={setServiceAndRef}
                 handleSubmit={handleSubmit}
                 onInputKeyDown={stableOnInputKeyDown}
               />
@@ -417,11 +486,11 @@ export default function HeroInquiry() {
               postcode={postcode}
               service={service}
               loading={loading}
-              setName={setName}
-              setEmail={setEmail}
-              setMobile={setMobile}
-              setPostcode={setPostcode}
-              setService={setService}
+              setName={setNameAndRef}
+              setEmail={setEmailAndRef}
+              setMobile={setMobileAndRef}
+              setPostcode={setPostcodeAndRef}
+              setService={setServiceAndRef}
               handleSubmit={handleSubmit}
               onInputKeyDown={stableOnInputKeyDown}
             />
