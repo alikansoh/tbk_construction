@@ -1,13 +1,15 @@
+
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
 
 const SERVICES = [
-  { name: 'Home Maintenance', icon: '🏠' },
-  { name: 'Kitchen Remodeling', icon: '🔨' },
-  { name: 'Flooring', icon: '📐' },
-  { name: 'Electrical Work', icon: '⚡' },
-  { name: 'Plumbing', icon: '🔧' },
+  { name: 'Home Maintenance', icon: '🏠', emergency: false },
+  { name: 'Kitchen Remodeling', icon: '🔨', emergency: false },
+  { name: 'Flooring', icon: '📐', emergency: false },
+  { name: 'Electrical Work', icon: '⚡', emergency: true },
+  { name: 'Plumbing', icon: '🔧', emergency: true },
+  { name: 'Emergency Repair', icon: '🚨', emergency: true },
 ];
 
 type FormFieldsProps = {
@@ -17,12 +19,14 @@ type FormFieldsProps = {
   mobile: string;
   postcode: string;
   service: string;
+  isEmergency: boolean;
   loading: boolean;
   setName: (v: string) => void;
   setEmail: (v: string) => void;
   setMobile: (v: string) => void;
   setPostcode: (v: string) => void;
   setService: (v: string) => void;
+  setIsEmergency: (v: boolean) => void;
   handleSubmit: () => void;
 };
 
@@ -33,12 +37,14 @@ const FormFields = React.memo<FormFieldsProps>(({
   mobile,
   postcode,
   service,
+  isEmergency,
   loading,
   setName,
   setEmail,
   setMobile,
   setPostcode,
   setService,
+  setIsEmergency,
   handleSubmit,
 }) => {
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -51,6 +57,26 @@ const FormFields = React.memo<FormFieldsProps>(({
 
   return (
     <div className={isMobile ? 'space-y-4' : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end'}>
+      {/* Emergency Toggle */}
+      <div className={isMobile ? 'mb-2' : 'lg:col-span-6 mb-2'}>
+        <button
+          type="button"
+          onClick={() => setIsEmergency(!isEmergency)}
+          className={`w-full py-3 px-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${
+            isEmergency
+              ? isMobile
+                ? 'bg-red-500 text-white shadow-lg animate-pulse-urgent'
+                : 'bg-red-500/90 backdrop-blur-md text-white shadow-[0_0_30px_rgba(239,68,68,0.6)] animate-pulse-urgent'
+              : isMobile
+              ? 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              : 'bg-white/5 backdrop-blur-md text-white/70 hover:bg-white/10 border border-white/20'
+          }`}
+        >
+          <span className="text-xl">{isEmergency ? '🚨' : '⏰'}</span>
+          <span>{isEmergency ? 'EMERGENCY REQUEST - Priority Response!' : 'Mark as Emergency (2-4 Hour Response)'}</span>
+        </button>
+      </div>
+      
       <div className={isMobile ? '' : 'lg:col-span-1'}>
         <input
           type="text"
@@ -66,7 +92,7 @@ const FormFields = React.memo<FormFieldsProps>(({
       <div className={isMobile ? '' : 'lg:col-span-1'}>
         <input
           type="email"
-          placeholder="Email*"
+          placeholder="Email "
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={loading}
@@ -102,7 +128,13 @@ const FormFields = React.memo<FormFieldsProps>(({
       <div className={isMobile ? '' : 'lg:col-span-1'}>
         <select
           value={service}
-          onChange={(e) => setService(e.target.value)}
+          onChange={(e) => {
+            setService(e.target.value);
+            const selectedService = SERVICES.find(s => s.name === e.target.value);
+            if (selectedService?.emergency && !isEmergency) {
+              setIsEmergency(true);
+            }
+          }}
           disabled={loading}
           className={
             isMobile
@@ -116,7 +148,7 @@ const FormFields = React.memo<FormFieldsProps>(({
           </option>
           {SERVICES.map((s) => (
             <option key={s.name} value={s.name} className={isMobile ? 'text-slate-900' : 'bg-slate-800 text-white'}>
-              {s.icon} {s.name}
+              {s.icon} {s.name} {s.emergency ? '⚡ FAST' : ''}
             </option>
           ))}
         </select>
@@ -126,7 +158,11 @@ const FormFields = React.memo<FormFieldsProps>(({
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className="w-full bg-gradient-to-r from-orange-500 via-orange-600 to-red-500 text-white font-bold py-3 px-6 rounded-xl hover:shadow-[0_0_40px_rgba(249,115,22,0.6)] hover:scale-[1.03] active:scale-[0.97] transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed group shadow-lg"
+          className={`w-full font-bold py-3 px-6 rounded-xl hover:scale-[1.03] active:scale-[0.97] transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed group shadow-lg ${
+            isEmergency
+              ? 'bg-gradient-to-r from-red-600 via-red-500 to-orange-500 text-white hover:shadow-[0_0_50px_rgba(239,68,68,0.8)] animate-pulse-urgent'
+              : 'bg-gradient-to-r from-orange-500 via-orange-600 to-red-500 text-white hover:shadow-[0_0_40px_rgba(249,115,22,0.6)]'
+          }`}
         >
           {loading ? (
             <>
@@ -134,11 +170,11 @@ const FormFields = React.memo<FormFieldsProps>(({
                 <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" className="opacity-25" />
                 <path fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" className="opacity-75" />
               </svg>
-              Sending...
+              {isEmergency ? 'Sending Emergency Request...' : 'Sending...'}
             </>
           ) : (
             <>
-              <span>{isMobile ? 'Get Free Quote' : 'Get Quote'}</span>
+              <span>{isEmergency ? '🚨 URGENT REQUEST' : (isMobile ? 'Get Free Quote' : 'Get Quote')}</span>
               <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
@@ -152,8 +188,8 @@ const FormFields = React.memo<FormFieldsProps>(({
 
 FormFields.displayName = 'FormFields';
 
-const StatusMessage = React.memo<{ status: 'success' | 'error'; errorMsg: string; isMobile: boolean }>(
-  ({ status, errorMsg, isMobile }) => {
+const StatusMessage = React.memo<{ status: 'success' | 'error'; errorMsg: string; isMobile: boolean; isEmergency: boolean }>(
+  ({ status, errorMsg, isMobile, isEmergency }) => {
     const baseClass = isMobile
       ? 'mt-4 text-center font-semibold py-3 px-4 rounded-xl animate-slideDown text-sm'
       : 'mt-4 text-center backdrop-blur-md font-semibold py-3 px-4 rounded-xl shadow-lg animate-slideDown text-sm';
@@ -169,7 +205,12 @@ const StatusMessage = React.memo<{ status: 'success' | 'error'; errorMsg: string
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
-            <span>Thanks! We&apos;ll be in touch {isMobile ? 'soon' : 'within 24 hours'}.</span>
+            <span>
+              {isEmergency 
+                ? '🚨 Emergency request received! We\'ll contact you within 2-4 hours.' 
+                : `Thanks! We'll be in touch ${isMobile ? 'soon' : 'within 24 hours'}.`
+              }
+            </span>
           </div>
         </div>
       );
@@ -200,6 +241,7 @@ export default function HeroInquiry() {
   const [mobile, setMobile] = useState('');
   const [postcode, setPostcode] = useState('');
   const [service, setService] = useState('');
+  const [isEmergency, setIsEmergency] = useState(false);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'error' | 'success'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
@@ -233,11 +275,12 @@ export default function HeroInquiry() {
       setMobile('');
       setPostcode('');
       setService('');
+      setIsEmergency(false);
       setStatus('success');
       setShowModal(false);
       setLoading(false);
     }, 1500);
-  }, [name, email, mobile, postcode, service]);
+  }, [name, email, mobile, postcode, service, isEmergency]);
 
   const scrollDown = useCallback(() => {
     window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
@@ -248,7 +291,7 @@ export default function HeroInquiry() {
   return (
     <div className="relative w-full min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Preload critical resources */}
-      <link rel="preload" as="image" href="/hero-poster.webp" type="image/webp" />
+      <link rel="preload" as="image" href="/hero.webp" type="image/webp" />
       <link rel="preload" as="video" href="/hero1.mp4" type="video/mp4" />
       
       {/* Optimized video with modern poster format */}
@@ -285,13 +328,12 @@ export default function HeroInquiry() {
             <span className="group-hover:tracking-wide transition-all duration-300">Available 24/7 • Fast Response</span>
           </div>
 
-          {/* Critical content for LCP - optimized with font-display consideration */}
           <h1 className="text-5xl sm:text-6xl lg:text-5xl xl:text-6xl font-black text-white leading-[1.05] mb-6 tracking-tight">
-            <span className="inline-block animate-fadeInUpDelay1">Professional</span>
+            <span className="inline-block animate-fadeInUpDelay1">Reliable</span>
             <br />
-            <span className="inline-block animate-fadeInUpDelay2">Construction</span>
+            <span className="inline-block animate-fadeInUpDelay2">Maintenance Services</span>
             <span className="block mt-3 bg-gradient-to-r from-orange-300 via-orange-400 to-red-400 bg-clip-text text-transparent animate-fadeInUpDelay3 drop-shadow-[0_0_40px_rgba(249,115,22,0.5)]">
-              Made Simple
+              When You Need Us
             </span>
           </h1>
 
@@ -326,18 +368,20 @@ export default function HeroInquiry() {
                 mobile={mobile}
                 postcode={postcode}
                 service={service}
+                isEmergency={isEmergency}
                 loading={loading}
                 setName={setName}
                 setEmail={setEmail}
                 setMobile={setMobile}
                 setPostcode={setPostcode}
                 setService={setService}
+                setIsEmergency={setIsEmergency}
                 handleSubmit={handleSubmit}
               />
             </div>
 
             {status !== 'idle' && (
-              <StatusMessage status={status} errorMsg={errorMsg} isMobile={false} />
+              <StatusMessage status={status} errorMsg={errorMsg} isMobile={false} isEmergency={isEmergency} />
             )}
           </div>
         </div>
@@ -397,17 +441,19 @@ export default function HeroInquiry() {
               mobile={mobile}
               postcode={postcode}
               service={service}
+              isEmergency={isEmergency}
               loading={loading}
               setName={setName}
               setEmail={setEmail}
               setMobile={setMobile}
               setPostcode={setPostcode}
               setService={setService}
+              setIsEmergency={setIsEmergency}
               handleSubmit={handleSubmit}
             />
 
             {status !== 'idle' && (
-              <StatusMessage status={status} errorMsg={errorMsg} isMobile={true} />
+              <StatusMessage status={status} errorMsg={errorMsg} isMobile={true} isEmergency={isEmergency} />
             )}
           </div>
         </div>
@@ -561,6 +607,7 @@ export default function HeroInquiry() {
         .animate-fadeIn {
           animation: fadeIn 0.3s ease-out;
         }
+
 
         .animate-pulse-slow {
           animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
