@@ -301,7 +301,7 @@ export default function HeroInquiry() {
         muted
         loop
         playsInline
-        poster="/hero-poster.webp"
+        poster="/hero.webp"
         preload="metadata"
       >
         <source src="/hero1.mp4" type="video/mp4" />
