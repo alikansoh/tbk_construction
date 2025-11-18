@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from 'framer-motion';
 
 const PROJECTS = [
@@ -9,7 +10,7 @@ const PROJECTS = [
     category: 'Kitchen',
     description: 'Complete kitchen transformation with custom cabinetry and premium finishes',
     stats: { duration: '6 weeks', budget: '£45k' },
-    images: ['kitchen1.jpg', 'kitchen2.jpg', 'kitchen3.jpg']
+    images: ['/kitchen2.Jpeg','/kitchen1.mp4', '/kitchen3.jpeg']
   },
   {
     title: 'Luxury Bathroom Suite',
@@ -55,6 +56,61 @@ const PROJECTS = [
   }
 ];
 
+/** helpers **/
+const isVideoFile = (src) => /\.(mp4|webm|mov|ogg)$/i.test(src);
+
+/**
+ * Media component - unified:
+ */
+const Media = ({ src, alt = '', className = '', hero = false, controls = false, asThumbnail = false }) => {
+  if (!src) return null;
+  const path = src.startsWith('/') ? src : `/${src}`;
+  const isVideo = isVideoFile(path);
+
+  if (isVideo && asThumbnail) {
+    return (
+      <div className={`relative w-full h-full flex items-center justify-center bg-slate-800 ${className}`}>
+        <div className="w-full h-full flex items-center justify-center">
+          <div className="relative w-full h-full flex items-center justify-center">
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-700/40 to-slate-900/20" />
+            <div className="flex items-center justify-center gap-2 p-2">
+              <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white/90" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M10 8l6 4-6 4V8z" fill="currentColor"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isVideo) {
+    return (
+      <div className={`absolute inset-0 flex items-center justify-center ${className}`}>
+        <video
+          className={`w-full h-full object-contain ${className}`}
+          src={path}
+          {...(hero ? { autoPlay: true, loop: true, muted: true, playsInline: true } : {})}
+          controls={controls}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={`absolute inset-0 flex items-center justify-center ${className}`}>
+      <Image
+        src={path}
+        alt={alt}
+        fill
+        className="object-cover"
+        priority={hero ? true : false}
+      />
+    </div>
+  );
+};
+
 // Animated Counter Component
 const AnimatedCounter = ({ value, duration = 1000 }) => {
   const [count, setCount] = useState(0);
@@ -63,33 +119,31 @@ const AnimatedCounter = ({ value, duration = 1000 }) => {
   useEffect(() => {
     const startTime = Date.now();
     const endValue = typeof value === 'string' ? parseInt(value.replace(/\D/g, '')) : value;
-    
+
     const animate = () => {
       const now = Date.now();
       const progress = Math.min((now - startTime) / duration, 1);
-      
-      // Easing function for smooth animation
+
       const easeOutQuart = 1 - Math.pow(1 - progress, 4);
       const current = Math.floor(easeOutQuart * endValue);
-      
+
       countRef.current = current;
       setCount(current);
-      
+
       if (progress < 1) {
         requestAnimationFrame(animate);
       }
     };
-    
+
     animate();
   }, [value, duration]);
 
-  // Format the number back to the original format
   if (typeof value === 'string') {
     if (value.includes('+')) return `${count}+`;
     if (value.includes('%')) return `${count}%`;
-    if (value.includes('/')) return value; // Keep 24/7 as is
+    if (value.includes('/')) return value; // e.g. "24/7"
   }
-  
+
   return count;
 };
 
@@ -100,6 +154,9 @@ export default function ProjectsSection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // ref to indicate a scroll should happen once modal has fully exited
+  const pendingScrollRef = useRef(false);
 
   const nextSlide = () => {
     setDirection(1);
@@ -120,14 +177,51 @@ export default function ProjectsSection() {
     setSelectedProject(project);
     setCurrentImageIndex(0);
     setIsModalOpen(true);
-    document.body.style.overflow = 'hidden';
+    if (typeof document !== 'undefined') document.body.style.overflow = 'hidden';
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedProject(null);
     setCurrentImageIndex(0);
-    document.body.style.overflow = 'unset';
+    if (typeof document !== 'undefined') document.body.style.overflow = 'unset';
+  };
+
+  // doScroll function used by both immediate and deferred flows
+  const doScrollToQuote = () => {
+    if (typeof document === 'undefined') return;
+  
+    const el = document.getElementById('quotes');
+  
+    if (el) {
+      // Smooth scroll to the element
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  
+      // Focus the element for accessibility
+      try {
+        el.setAttribute('tabindex', '-1'); // make it focusable if not naturally
+        el.focus({ preventScroll: true });
+      } catch (e) {
+        // fallback: ignore focus errors
+        console.warn('Could not focus element', e);
+      }
+    } else {
+      // Fallback: set hash to allow bookmarking/navigation
+      window.location.hash = '#quotes';
+    }
+  };
+  
+
+  // CLOSE MODAL (if open) and scroll to #quote reliably using onExitComplete
+  const handleGoToQuote = () => {
+    if (isModalOpen) {
+      // mark that we want to scroll after modal unmounts, then close modal
+      pendingScrollRef.current = true;
+      closeModal();
+    } else {
+      // modal not open — scroll immediately
+      doScrollToQuote();
+    }
   };
 
   const nextImage = () => {
@@ -145,11 +239,9 @@ export default function ProjectsSection() {
   // Auto-play functionality
   useEffect(() => {
     if (!isAutoPlaying) return;
-    
     const interval = setInterval(() => {
       nextSlide();
     }, 5000);
-
     return () => clearInterval(interval);
   }, [currentIndex, isAutoPlaying]);
 
@@ -157,7 +249,7 @@ export default function ProjectsSection() {
     enter: (direction) => ({
       x: direction > 0 ? '100%' : '-100%',
       opacity: 0,
-      scale: 0.95,
+      scale: 0.98,
     }),
     center: {
       x: 0,
@@ -167,7 +259,7 @@ export default function ProjectsSection() {
     exit: (direction) => ({
       x: direction > 0 ? '-100%' : '100%',
       opacity: 0,
-      scale: 0.95,
+      scale: 0.98,
     }),
   };
 
@@ -182,11 +274,11 @@ export default function ProjectsSection() {
       </div>
 
       {/* Noise texture */}
-      <div className="absolute inset-0 opacity-[0.015] mix-blend-overlay pointer-events-none" 
-           style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'3.5\' numOctaves=\'4\' /%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' /%3E%3C/svg%3E")' }} 
+      <div className="absolute inset-0 opacity-[0.015] mix-blend-overlay pointer-events-none"
+        style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'3.5\' numOctaves=\'4\' /%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' /%3E%3C/svg%3E")' }}
       />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 lg:py-20">
+      <div className="relative max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16 lg:py-20">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -207,14 +299,14 @@ export default function ProjectsSection() {
             </svg>
             OUR PORTFOLIO
           </motion.div>
-          
+
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white mb-3 sm:mb-4 tracking-tight leading-[1.1] px-4">
             Transforming Visions into
             <span className="block mt-1 sm:mt-2 bg-gradient-to-r from-orange-300 via-orange-400 to-red-400 bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(249,115,22,0.5)]">
               Beautiful Reality
             </span>
           </h2>
-          
+
           <p className="text-base sm:text-lg text-slate-200/90 max-w-2xl mx-auto leading-relaxed px-4">
             Explore our collection of completed projects showcasing quality craftsmanship and attention to detail
           </p>
@@ -223,12 +315,19 @@ export default function ProjectsSection() {
         {/* Slider Container */}
         <div className="relative">
           {/* Main Slide */}
-          <div 
-            className="relative h-[550px] sm:h-[600px] md:h-[650px] lg:h-[600px] rounded-xl sm:rounded-2xl lg:rounded-3xl overflow-hidden"
+          <div
+            className="relative h-[480px] sm:h-[520px] md:h-[560px] lg:h-[520px] rounded-xl sm:rounded-2xl lg:rounded-3xl overflow-hidden"
             onMouseEnter={() => setIsAutoPlaying(false)}
             onMouseLeave={() => setIsAutoPlaying(true)}
           >
-            <AnimatePresence mode="wait" custom={direction}>
+            <AnimatePresence mode="wait" custom={direction} onExitComplete={() => {
+              // if a scroll was requested while modal was open, do it now
+              if (pendingScrollRef.current) {
+                pendingScrollRef.current = false;
+                // small extra tick to ensure layout settled
+                setTimeout(doScrollToQuote, 20);
+              }
+            }}>
               <motion.div
                 key={currentIndex}
                 custom={direction}
@@ -247,12 +346,16 @@ export default function ProjectsSection() {
                   {/* Image Section */}
                   <div className="relative h-3/5 sm:h-2/3 bg-slate-800">
                     <div className="absolute inset-0 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 flex items-center justify-center">
-                      <svg className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
+                      {/* Render project's hero media (first image/video) */}
+                      <Media
+                        src={currentProject.images && currentProject.images[0]}
+                        alt={`${currentProject.title} hero`}
+                        hero
+                        className=""
+                      />
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent"></div>
-                    
+
                     {/* Category Badge */}
                     <div className="absolute top-4 left-4 sm:top-6 sm:left-6 bg-gradient-to-r from-orange-500 to-red-500 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-[0_0_30px_rgba(249,115,22,0.6)]">
                       <span className="text-xs sm:text-sm font-bold text-white">{currentProject.category}</span>
@@ -293,35 +396,7 @@ export default function ProjectsSection() {
                         </p>
                       </div>
 
-                      <div className="flex flex-col gap-3">
-                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                          <div className="bg-white/5 backdrop-blur-sm rounded-lg sm:rounded-xl p-2.5 sm:p-3 lg:p-4 border border-white/10">
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 rounded-lg bg-orange-500/20 flex items-center justify-center border border-orange-400/30 flex-shrink-0">
-                                <svg className="w-4 h-4 sm:w-4.5 sm:h-4.5 lg:w-5 lg:h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                              </div>
-                              <div className="min-w-0">
-                                <div className="text-xs text-slate-400 font-medium">Duration</div>
-                                <div className="text-white font-bold text-sm sm:text-base lg:text-lg truncate">{currentProject.stats.duration}</div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="bg-white/5 backdrop-blur-sm rounded-lg sm:rounded-xl p-2.5 sm:p-3 lg:p-4 border border-white/10">
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 rounded-lg bg-orange-500/20 flex items-center justify-center border border-orange-400/30 flex-shrink-0">
-                                <svg className="w-4 h-4 sm:w-4.5 sm:h-4.5 lg:w-5 lg:h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                              </div>
-                              <div className="min-w-0">
-                                <div className="text-xs text-slate-400 font-medium">Investment</div>
-                                <div className="text-white font-bold text-sm sm:text-base lg:text-lg truncate">{currentProject.stats.budget}</div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                      <div className="">
                         <motion.button
                           onClick={() => openProjectModal(currentProject, currentIndex)}
                           whileHover={{ scale: 1.02 }}
@@ -376,22 +451,26 @@ export default function ProjectsSection() {
                         ? 'border-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.6)]'
                         : 'border-white/20 hover:border-white/40'
                     }`}
+                    aria-label={`Go to ${project.title}`}
                   >
-                    <div className="absolute inset-0 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900"></div>
+                    {/* Thumbnail image (Image uses fill inside absolute wrapper) */}
+                    <div className="absolute inset-0">
+                      <Image
+                        src={(project.images && (project.images[0].startsWith('/') ? project.images[0] : `/${project.images[0]}`)) || ''}
+                        alt={`${project.title} thumbnail`}
+                        fill
+                        className={`object-cover ${index === currentIndex ? '' : 'opacity-90'}`}
+                        priority={index === currentIndex}
+                      />
+                    </div>
+
                     {index === currentIndex && (
-                      <motion.div 
+                      <motion.div
                         layoutId="activeSlide"
                         className="absolute inset-0 bg-orange-500/20"
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
                       />
                     )}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className={`font-bold text-sm transition-colors ${
-                        index === currentIndex ? 'text-orange-300' : 'text-white'
-                      }`}>
-                        {index + 1}
-                      </span>
-                    </div>
                   </motion.button>
                 ))}
               </div>
@@ -400,7 +479,6 @@ export default function ProjectsSection() {
               <div className="sm:hidden relative overflow-hidden">
                 <div className="overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory">
                   <div className="flex gap-2 px-4 pb-2">
-                    {/* Triple the array for seamless loop */}
                     {[...PROJECTS, ...PROJECTS, ...PROJECTS].map((project, idx) => {
                       const actualIndex = idx % PROJECTS.length;
                       return (
@@ -413,18 +491,17 @@ export default function ProjectsSection() {
                               ? 'border-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.6)]'
                               : 'border-white/20'
                           }`}
+                          aria-label={`Go to ${project.title}`}
                         >
-                          <div className="absolute inset-0 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900"></div>
+                          <Image
+                            src={(project.images && (project.images[0].startsWith('/') ? project.images[0] : `/${project.images[0]}`)) || ''}
+                            alt={`${project.title} thumb`}
+                            fill
+                            className={`object-cover ${actualIndex === currentIndex ? '' : 'opacity-90'}`}
+                          />
                           {actualIndex === currentIndex && (
                             <div className="absolute inset-0 bg-orange-500/20"></div>
                           )}
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <span className={`font-bold text-xs transition-colors ${
-                              actualIndex === currentIndex ? 'text-orange-300' : 'text-white'
-                            }`}>
-                              {actualIndex + 1}
-                            </span>
-                          </div>
                         </motion.button>
                       );
                     })}
@@ -444,7 +521,7 @@ export default function ProjectsSection() {
           className="mt-12 sm:mt-16 lg:mt-20 grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
         >
           {[
-            { number: '500+', label: 'Projects Completed', icon: 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z' },
+            { number: '500+', label: 'Projects Completed', icon: 'M3 7a2 2 0 012-2h4l2 2h6a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2V7z' },
             { number: '98%', label: 'Client Satisfaction', icon: 'M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
             { number: '15+', label: 'Years Experience', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
             { number: '24/7', label: 'Support Available', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
@@ -483,9 +560,10 @@ export default function ProjectsSection() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="bg-gradient-to-r from-orange-500 via-orange-600 to-red-500 text-white font-bold py-3 px-8 sm:py-4 sm:px-10 rounded-xl shadow-[0_0_40px_rgba(249,115,22,0.6)] hover:shadow-[0_0_60px_rgba(249,115,22,0.8)] transition-all inline-flex items-center gap-2 sm:gap-3 group"
+            className="bg-gradient-to-r cursor-pointer from-orange-500 via-orange-600 to-red-500 text-white font-bold py-3 px-8 sm:py-4 sm:px-10 rounded-xl shadow-[0_0_40px_rgba(249,115,22,0.6)] hover:shadow-[0_0_60px_rgba(249,115,22,0.8)] transition-all inline-flex items-center gap-2 sm:gap-3 group"
+            onClick={handleGoToQuote}
           >
-            <span className="text-base sm:text-lg">Start Your Project</span>
+            <span className="text-base sm:text-lg">get your free quote</span>
             <svg
               className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform"
               fill="none"
@@ -529,19 +607,25 @@ export default function ProjectsSection() {
               <div className="grid md:grid-cols-2 gap-4 sm:gap-6 p-4 sm:p-6 overflow-y-auto">
                 {/* Image Gallery Side */}
                 <div className="space-y-3 sm:space-y-4">
-                  {/* Main Image */}
+                  {/* Main Image / Video Player */}
                   <div className="relative h-64 sm:h-80 md:h-96 rounded-lg sm:rounded-xl overflow-hidden bg-slate-800">
-                    <div className="absolute inset-0 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 flex items-center justify-center">
-                      <div className="text-center px-4">
-                        <svg className="w-16 h-16 sm:w-20 sm:h-20 text-slate-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <div className="text-slate-400 text-xs sm:text-sm font-medium">
-                          Image {currentImageIndex + 1} of {selectedProject.images.length}
-                        </div>
+                    {isVideoFile(selectedProject.images[currentImageIndex]) ? (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <video
+                          className="w-full h-full object-cover"
+                          src={selectedProject.images[currentImageIndex].startsWith('/') ? selectedProject.images[currentImageIndex] : `/${selectedProject.images[currentImageIndex]}`}
+                          controls
+                          playsInline
+                        />
                       </div>
-                    </div>
-                    
+                    ) : (
+                      <Media
+                        src={selectedProject.images[currentImageIndex]}
+                        alt={`${selectedProject.title} image ${currentImageIndex + 1}`}
+                        className=""
+                      />
+                    )}
+
                     {/* Navigation Arrows */}
                     {selectedProject.images.length > 1 && (
                       <>
@@ -567,24 +651,46 @@ export default function ProjectsSection() {
 
                   {/* Thumbnail Grid */}
                   <div className="grid grid-cols-4 gap-2">
-                    {selectedProject.images.map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setCurrentImageIndex(index)}
-                        className={`relative aspect-square rounded-md sm:rounded-lg overflow-hidden border-2 transition-all ${
-                          index === currentImageIndex
-                            ? 'border-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.5)]'
-                            : 'border-white/20 hover:border-white/40'
-                        }`}
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">{index + 1}</span>
-                        </div>
-                        {index === currentImageIndex && (
-                          <div className="absolute inset-0 bg-orange-500/20"></div>
-                        )}
-                      </button>
-                    ))}
+                    {selectedProject.images.map((img, index) => {
+                      const actualSrc = img.startsWith('/') ? img : `/${img}`;
+                      const video = isVideoFile(img);
+                      return (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentImageIndex(index)}
+                          className={`relative aspect-square rounded-md sm:rounded-lg overflow-hidden border-2 transition-all ${
+                            index === currentImageIndex
+                              ? 'border-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.5)]'
+                              : 'border-white/20 hover:border-white/40'
+                          }`}
+                        >
+                          {video ? (
+                            <div className="absolute inset-0 flex items-center justify-center bg-slate-800">
+                              <div className="absolute inset-0">
+                                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-black/10 to-black/20" />
+                              </div>
+                              <div className="flex items-center justify-center w-full h-full">
+                                <svg className="w-8 h-8 sm:w-9 sm:h-9 text-white/90" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                  <path d="M10 8l6 4-6 4V8z" fill="currentColor"/>
+                                </svg>
+                              </div>
+                            </div>
+                          ) : (
+                            <Image
+                              src={actualSrc}
+                              alt={`${selectedProject.title} thumb ${index + 1}`}
+                              fill
+                              className="object-cover"
+                            />
+                          )}
+
+                          {index === currentImageIndex && (
+                            <div className="absolute inset-0 bg-orange-500/20"></div>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -656,6 +762,7 @@ export default function ProjectsSection() {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg sm:rounded-xl shadow-[0_0_30px_rgba(249,115,22,0.5)] hover:shadow-[0_0_40px_rgba(249,115,22,0.7)] transition-all flex items-center justify-center gap-2"
+                      onClick={handleGoToQuote}
                     >
                       <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -681,7 +788,7 @@ export default function ProjectsSection() {
         }
         .animate-pulse-slow { animation: pulse-slow 8s ease-in-out infinite; }
         .animate-pulse-slower { animation: pulse-slower 10s ease-in-out infinite; }
-        
+
         /* Hide scrollbar but keep functionality */
         .scrollbar-hide {
           -ms-overflow-style: none;
@@ -691,7 +798,7 @@ export default function ProjectsSection() {
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
         }
-        
+
         /* Smooth touch scrolling on mobile */
         .scrollbar-hide {
           -webkit-overflow-scrolling: touch;
