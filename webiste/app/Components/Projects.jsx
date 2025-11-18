@@ -10,7 +10,7 @@ const PROJECTS = [
     category: 'Kitchen',
     description: 'Complete kitchen transformation with custom cabinetry and premium finishes',
     stats: { duration: '6 weeks', budget: '£45k' },
-    images: ['/kitchen2.Jpeg','/kitchen1.mp4', '/kitchen3.jpeg']
+    images: ['/kitchen2.jpeg','/kitchen1.mp4', '/kitchen3.jpeg']
   },
   {
     title: 'Luxury Bathroom Suite',
