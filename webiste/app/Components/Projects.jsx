@@ -9,30 +9,39 @@ const PROJECTS = [
     title: 'Modern Kitchen Renovation',
     category: 'Kitchen',
     description: 'Complete kitchen transformation with custom cabinetry and premium finishes',
-    stats: { duration: '6 weeks', budget: '£45k' },
+    stats: { duration: '3 weeks', budget: '£12k' },
     images: ['/kitchen2.jpeg','/kitchen1.mp4', '/kitchen3.jpeg']
   },
   {
-    title: 'Luxury Bathroom Suite',
-    category: 'Bathroom',
-    description: 'Spa-inspired bathroom with premium fixtures and elegant tilework',
-    stats: { duration: '4 weeks', budget: '£28k' },
-    images: ['bathroom1.jpg', 'bathroom2.jpg', 'bathroom3.jpg', 'bathroom4.jpg']
+    title: 'Luxury Room Design',
+    category: 'Interior Design',
+    description: 'A beautifully designed room featuring modern painting, stylish décor elements, and a refined aesthetic finish',
+    stats: { duration: '2 days', budget: '£500' },
+    images: ['room.jpeg']
   },
+  
   {
-    title: 'Home Extension',
-    category: 'Extension',
-    description: 'Two-story extension adding 800 sq ft of living space',
-    stats: { duration: '12 weeks', budget: '£95k' },
-    images: ['extension1.jpg', 'extension2.jpg', 'extension3.jpg']
+    "title": "Modern Room Redesign",
+    "category": "Interior Design",
+    "description": "A full room redesign featuring freshly painted built-in wardrobes, soft neutral wall finishes, modern lighting, and minimalistic décor to enhance brightness and space.",
+    "stats": {
+      "duration": "3 weeks",
+      "budget": "£12k"
+    },
+    "images": ["room2.jpeg"]
   },
+  
   {
-    title: 'Garden Landscaping',
-    category: 'Outdoor',
-    description: 'Complete garden redesign with patio, deck, and water features',
-    stats: { duration: '8 weeks', budget: '£32k' },
-    images: ['garden1.jpg', 'garden2.jpg', 'garden3.jpg', 'garden4.jpg', 'garden5.jpg']
-  },
+    "title": "Bedroom Remodelling ",
+    "category": "Bedroom",
+    "description": "A complete bedroom remodelling project featuring new premium wood flooring and custom-built floor-to-ceiling wardrobes, finished in a modern neutral palette for a clean and elegant look.",
+    "stats": {
+      "duration": "4 weeks",
+      "budget": "£10k"
+    },
+    "images": ["bedroom.jpeg","bedroom2.jpeg"]
+  }
+  ,
   {
     title: 'Loft Conversion',
     category: 'Conversion',
@@ -316,7 +325,7 @@ export default function ProjectsSection() {
         <div className="relative">
           {/* Main Slide */}
           <div
-            className="relative h-[480px] sm:h-[520px] md:h-[560px] lg:h-[520px] rounded-xl sm:rounded-2xl lg:rounded-3xl overflow-hidden"
+            className="relative h-[480px] sm:h-[520px] md:h-[560px] lg:h-[650px] rounded-xl sm:rounded-2xl lg:rounded-3xl overflow-hidden"
             onMouseEnter={() => setIsAutoPlaying(false)}
             onMouseLeave={() => setIsAutoPlaying(true)}
           >
@@ -385,33 +394,33 @@ export default function ProjectsSection() {
                   </div>
 
                   {/* Content Section */}
-                  <div className="relative h-2/5 sm:h-1/3 p-4 sm:p-6 lg:p-8 flex flex-col justify-center">
-                    <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 items-start lg:items-center">
-                      <div>
-                        <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-white mb-2 leading-tight">
-                          {currentProject.title}
-                        </h3>
-                        <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-                          {currentProject.description}
-                        </p>
-                      </div>
+                 <div className="relative h-2/5 sm:h-1/3 p-4 sm:p-6 lg:p-8 flex flex-col justify-center">
+  <div className="flex flex-col gap-4 sm:gap-6">
+    <div>
+      <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-white mb-2 leading-tight">
+        {currentProject.title}
+      </h3>
+      <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+        {currentProject.description}
+      </p>
+    </div>
 
-                      <div className="">
-                        <motion.button
-                          onClick={() => openProjectModal(currentProject, currentIndex)}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-2 sm:py-2.5 lg:py-3 px-3 sm:px-4 rounded-lg shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] transition-all flex items-center justify-center gap-2"
-                        >
-                          <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                          <span className="text-xs sm:text-sm lg:text-base truncate">View Project ({currentProject.images.length} photos)</span>
-                        </motion.button>
-                      </div>
-                    </div>
-                  </div>
+    <div>
+      <motion.button
+        onClick={() => openProjectModal(currentProject, currentIndex)}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-2 sm:py-2.5 lg:py-3 px-3 sm:px-4 rounded-lg shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] transition-all flex items-center justify-center gap-2"
+      >
+        <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+        <span className="text-xs sm:text-sm lg:text-base truncate">View Project ({currentProject.images.length} photos)</span>
+      </motion.button>
+    </div>
+  </div>
+</div>
                 </div>
               </motion.div>
             </AnimatePresence>
