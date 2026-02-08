@@ -139,7 +139,7 @@ function AboutUsSectionComponent() {
   }, []);
 
   return (
-    <section className="relative w-full bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
+    <section id="about" className="relative w-full bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
       {/* Animated glowing circles using motion instead of CSS keyframes */}
       <motion.div
         className="absolute top-40 right-20 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl"

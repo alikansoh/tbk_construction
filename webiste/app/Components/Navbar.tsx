@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -32,7 +32,7 @@ export default function ConstructionNav() {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -51,19 +51,19 @@ export default function ConstructionNav() {
     {
       name: 'Kitchen Remodeling',
       icon: Utensils,
-      href: '/services/kitchen',
+      href: '/services/kitchen-remodeling',
       description: 'Custom kitchen design and renovation',
     },
     {
-      name: 'Flooring',
+      name: 'Carpentry',
       icon: Layers,
-      href: '/services/flooring',
-      description: 'Premium flooring installation and repair',
+      href: '/services/carpentry-flooring',
+      description: 'Expert woodwork and custom joinery',
     },
     {
       name: 'Electrical Work',
       icon: Zap,
-      href: '/services/electrical',
+      href: '/services/electrical-work',
       description: 'Licensed electrical services and upgrades',
     },
     {
@@ -72,7 +72,48 @@ export default function ConstructionNav() {
       href: '/services/plumbing',
       description: 'Professional plumbing installation and repairs',
     },
+    {
+      name: 'Painting & Finishing',
+      icon: Layers,
+      href: '/services/painting-finishing',
+      description: 'Interior and exterior painting services',
+    },
   ];
+
+  // Smooth-scroll handler for About link
+  function handleAboutClick(e: React.MouseEvent) {
+    // If we're already on the homepage, prevent default navigation and smooth scroll
+    if (typeof window !== 'undefined' && window.location.pathname === '/') {
+      e.preventDefault();
+      const target = document.getElementById('about');
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        // fallback: navigate to home anchor
+        window.location.href = '/#about';
+      }
+      // close mobile menu if open
+      setIsOpen(false);
+      setServicesOpen(false);
+    }
+    // otherwise allow Link to navigate to "/#about"
+  }
+
+  // Smooth-scroll handler for Projects link
+  function handleProjectsClick(e: React.MouseEvent) {
+    if (typeof window !== 'undefined' && window.location.pathname === '/') {
+      e.preventDefault();
+      const target = document.getElementById('projects');
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        window.location.href = '/#projects';
+      }
+      setIsOpen(false);
+      setServicesOpen(false);
+    }
+    // otherwise allow Link to navigate to "/#projects"
+  }
 
   return (
     <>
@@ -126,7 +167,8 @@ export default function ConstructionNav() {
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center space-x-1">
               <NavLink href="/" icon={Home} text="Home" />
-              <NavLink href="/about" icon={Info} text="About Us" />
+              {/* About now uses NavLink with onClick to smooth-scroll when on home */}
+              <NavLink href="/#about" icon={Info} text="About Us" onClick={handleAboutClick} />
 
               {/* Services Dropdown */}
               <div className="relative group">
@@ -135,26 +177,24 @@ export default function ConstructionNav() {
                   <ChevronDown className="w-4 h-4 group-hover:rotate-180 transition-transform duration-300" />
                 </button>
 
-                {/* Dropdown Menu */}
+                {/* Dropdown Menu (scrollable) */}
                 <div className="absolute left-0 mt-3 w-96 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 -translate-y-2">
                   <div className="bg-white rounded-2xl shadow-2xl border-2 border-gray-100 overflow-hidden">
                     <div className="bg-gradient-to-r from-[#F3782D] to-[#e86820] px-6 py-4">
                       <h3 className="text-white font-bold text-lg">Our Services</h3>
                       <p className="text-orange-100 text-sm">Expert solutions for your property</p>
                     </div>
-                    <div className="p-3">
+
+                    {/* Service list area made scrollable */}
+                    <div className="p-3 max-h-[320px] overflow-y-auto">
                       {services.map((service, index) => {
-                        const Icon = service.icon;
                         return (
                           <Link
                             key={index}
                             href={service.href}
-                            className="flex items-start space-x-4 px-4 py-4 hover:bg-orange-50 rounded-xl transition-all duration-200 group/item"
+                            className="flex items-start space-x-4 px-4 py-3 hover:bg-orange-50 rounded-xl transition-all duration-200 group/item"
                           >
-                            <div className="bg-gradient-to-br from-[#F3782D] to-[#e86820] p-3 rounded-xl group-hover/item:shadow-lg transition-all shrink-0">
-                              <Icon className="w-6 h-6 text-white" />
-                            </div>
-                            <div className="flex-1 pt-1">
+                            <div className="flex-1 pt-0.5">
                               <div className="text-[#4E4D4F] font-bold text-base group-hover/item:text-[#F3782D] transition-colors">
                                 {service.name}
                               </div>
@@ -165,21 +205,18 @@ export default function ConstructionNav() {
                         );
                       })}
                     </div>
-                    <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
-                      <Link href="/services" className="text-[#F3782D] hover:text-[#e86820] font-bold text-sm flex items-center justify-between group/all">
-                        <span>View All Services</span>
-                        <span className="text-[#F3782D] group-hover/all:translate-x-2 transition-transform text-xl">→</span>
-                      </Link>
-                    </div>
+
+                    {/* footer removed as requested */}
                   </div>
                 </div>
               </div>
 
-              <NavLink href="/projects" icon={FolderOpen} text="Our Projects" />
+              {/* Projects now smooth-scroll to #projects when on home */}
+              <NavLink href="/#projects" icon={FolderOpen} text="Our Projects" onClick={handleProjectsClick} />
               <NavLink href="/contact" icon={MessageSquare} text="Contact" />
 
               <Link
-                href="/quote"
+                href="/#quotes"
                 className="bg-gradient-to-r from-[#F3782D] to-[#e86820] text-white px-8 py-3 rounded-xl hover:shadow-lg hover:shadow-orange-500/40 transition-all duration-300 font-bold text-[15px] ml-4 hover:scale-105 transform border-2 border-[#F3782D] flex items-center space-x-2"
               >
                 <FileText className="w-4 h-4" />
@@ -199,7 +236,7 @@ export default function ConstructionNav() {
 
           {/* Mobile Menu */}
           {isOpen && (
-            <div className="lg:hidden pb-6 space-y-2 border-t border-gray-200 pt-4">
+            <div className="lg:hidden pb-6 space-y-2 border-t border-gray-200 pt-4 max-h-[calc(100vh-8rem)] overflow-y-auto">
               {/* Mobile Contact Info */}
               <div className="bg-gradient-to-r from-[#4E4D4F] to-[#5E5D5F] rounded-xl p-4 mb-4">
                 <a href="tel:+447340170864" className="flex items-center space-x-3 text-white mb-3">
@@ -222,9 +259,12 @@ export default function ConstructionNav() {
               </Link>
 
               <Link
-                href="/about"
+                href="/#about"
                 className=" text-[#4E4D4F] hover:text-[#F3782D] hover:bg-orange-50 px-4 py-3 rounded-lg transition-all duration-200 font-semibold flex items-center space-x-3"
-                onClick={() => setIsOpen(false)}
+                onClick={(e) => {
+                  // smooth scroll when already on home; otherwise navigate to "/#about"
+                  handleAboutClick(e as unknown as React.MouseEvent);
+                }}
               >
                 <Info className="w-5 h-5" />
                 <span>About Us</span>
@@ -241,9 +281,8 @@ export default function ConstructionNav() {
                 </button>
 
                 {servicesOpen && (
-                  <div className="mt-2 space-y-2 bg-gradient-to-br from-orange-50 to-orange-50/30 rounded-xl p-3">
+                  <div className="mt-2 space-y-2 bg-gradient-to-br from-orange-50 to-orange-50/30 rounded-xl p-3 max-h-[40vh] overflow-y-auto">
                     {services.map((service, index) => {
-                      const Icon = service.icon;
                       return (
                         <Link
                           key={index}
@@ -254,34 +293,26 @@ export default function ConstructionNav() {
                             setServicesOpen(false);
                           }}
                         >
-                          <div className="bg-gradient-to-br from-[#F3782D] to-[#e86820] p-2.5 rounded-lg shrink-0 shadow-md">
-                            <Icon className="w-5 h-5 text-white" />
-                          </div>
                           <div className="flex-1">
                             <div className="text-[#4E4D4F] font-bold text-sm">{service.name}</div>
                             <div className="text-gray-600 text-xs mt-0.5">{service.description}</div>
                           </div>
+                          <ChevronDown className="w-4 h-4 text-gray-400 -rotate-90" />
                         </Link>
                       );
                     })}
-                    <Link
-                      href="/services"
-                      className="block text-[#F3782D] hover:text-[#e86820] font-bold text-sm px-4 py-3"
-                      onClick={() => {
-                        setIsOpen(false);
-                        setServicesOpen(false);
-                      }}
-                    >
-                      View All Services →
-                    </Link>
+                    {/* "View All Services" removed as requested */}
                   </div>
                 )}
               </div>
 
               <Link
-                href="/projects"
+                href="/#projects"
                 className=" text-[#4E4D4F] hover:text-[#F3782D] hover:bg-orange-50 px-4 py-3 rounded-lg transition-all duration-200 font-semibold flex items-center space-x-3"
-                onClick={() => setIsOpen(false)}
+                onClick={(e) => {
+                  // smooth scroll when on home; otherwise navigate to "/#projects"
+                  handleProjectsClick(e as unknown as React.MouseEvent);
+                }}
               >
                 <FolderOpen className="w-5 h-5" />
                 <span>Our Projects</span>
@@ -297,7 +328,7 @@ export default function ConstructionNav() {
               </Link>
 
               <Link
-                href="/quote"
+                href="/#quotes"
                 className=" bg-gradient-to-r from-[#F3782D] to-[#e86820] text-white px-4 py-4 rounded-xl text-center font-bold hover:shadow-lg transition-all duration-200 mt-4 flex items-center justify-center space-x-2"
                 onClick={() => setIsOpen(false)}
               >
@@ -312,11 +343,22 @@ export default function ConstructionNav() {
   );
 }
 
-/* Helper NavLink component */
-function NavLink({ href, icon: Icon, text }: { href: string; icon: LucideIcon; text: string }) {
+/* Helper NavLink component with optional onClick */
+function NavLink({
+  href,
+  icon: Icon,
+  text,
+  onClick,
+}: {
+  href: string;
+  icon: LucideIcon;
+  text: string;
+  onClick?: (e: React.MouseEvent) => void;
+}) {
   return (
     <Link
       href={href}
+      onClick={onClick}
       className="text-[#4E4D4F] hover:text-[#F3782D] px-5 py-2 rounded-lg transition-all duration-200 font-semibold text-[15px] hover:bg-orange-50 relative group flex items-center space-x-2"
     >
       <Icon className="w-4 h-4" />

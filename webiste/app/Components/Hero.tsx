@@ -73,7 +73,7 @@ const FormFields = React.memo<FormFieldsProps>(({
           }`}
         >
           <span className="text-xl">{isEmergency ? '🚨' : '⏰'}</span>
-          <span>{isEmergency ? 'EMERGENCY REQUEST - Priority Response!' : 'Mark as Emergency (2-4 Hour Response)'}</span>
+          <span>{isEmergency ? 'EMERGENCY REQUEST - Priority Response!' : 'Mark as Emergency (response directly)'}</span>
         </button>
       </div>
       

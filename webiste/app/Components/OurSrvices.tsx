@@ -38,10 +38,10 @@ const SERVICES: ServiceItem[] = [
   },
   {
     image: carpenter,
-    title: 'Carpeting & Flooring',
-    description: 'Expert installation for carpets, hardwood, tile, laminate, and luxury vinyl.',
+    title: 'Carpentry & Flooring',
+    description: 'Bespoke joinery and expert flooring installation for carpets, hardwood, tile, laminate, and luxury vinyl.',
     features: ['Free Consultation', 'Quick Installation', 'Lifetime Warranty'],
-    link: '/services/carpeting-flooring',
+    link: '/services/carpentry-flooring',
   },
   {
     image: electric,
