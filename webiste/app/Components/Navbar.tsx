@@ -13,14 +13,13 @@ import {
   Zap,
   Wrench,
   Droplet,
-  Phone,
-  Mail,
   Info,
   FolderOpen,
   MessageSquare,
   FileText,
   Clock,
   LucideIcon,
+  MapPin,
 } from 'lucide-react';
 
 export default function ConstructionNav() {
@@ -82,21 +81,17 @@ export default function ConstructionNav() {
 
   // Smooth-scroll handler for About link
   function handleAboutClick(e: React.MouseEvent) {
-    // If we're already on the homepage, prevent default navigation and smooth scroll
     if (typeof window !== 'undefined' && window.location.pathname === '/') {
       e.preventDefault();
       const target = document.getElementById('about');
       if (target) {
         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } else {
-        // fallback: navigate to home anchor
         window.location.href = '/#about';
       }
-      // close mobile menu if open
-      setIsOpen(false);
-      setServicesOpen(false);
     }
-    // otherwise allow Link to navigate to "/#about"
+    setIsOpen(false);
+    setServicesOpen(false);
   }
 
   // Smooth-scroll handler for Projects link
@@ -109,10 +104,24 @@ export default function ConstructionNav() {
       } else {
         window.location.href = '/#projects';
       }
-      setIsOpen(false);
-      setServicesOpen(false);
     }
-    // otherwise allow Link to navigate to "/#projects"
+    setIsOpen(false);
+    setServicesOpen(false);
+  }
+
+  // Smooth-scroll handler for Serving Areas (#location)
+  function handleLocationClick(e: React.MouseEvent) {
+    if (typeof window !== 'undefined' && window.location.pathname === '/') {
+      e.preventDefault();
+      const target = document.getElementById('location');
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        window.location.href = '/#location';
+      }
+    }
+    setIsOpen(false);
+    setServicesOpen(false);
   }
 
   return (
@@ -122,20 +131,14 @@ export default function ConstructionNav() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center text-sm">
             <div className="flex items-center space-x-6">
-              <a
-                href="tel:+447340170864"
+              <Link
+                href="/#location"
+                onClick={handleLocationClick}
                 className="flex items-center space-x-2 hover:text-[#F3782D] transition-colors"
               >
-                <Phone className="w-4 h-4" />
-                <span className="font-medium">07340170864</span>
-              </a>
-              <a
-                href="mailto:info@tbkconstruction.co.uk"
-                className="flex items-center space-x-2 hover:text-[#F3782D] transition-colors"
-              >
-                <Mail className="w-4 h-4" />
-                <span>info@tbkconstruction.co.uk</span>
-              </a>
+                <MapPin className="w-4 h-4" />
+                <span className="font-medium">Serving Areas</span>
+              </Link>
             </div>
             <div className="flex items-center space-x-4 text-xs">
               <div className="flex items-center space-x-2">
@@ -167,12 +170,16 @@ export default function ConstructionNav() {
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center space-x-1">
               <NavLink href="/" icon={Home} text="Home" />
-              {/* About now uses NavLink with onClick to smooth-scroll when on home */}
               <NavLink href="/#about" icon={Info} text="About Us" onClick={handleAboutClick} />
 
               {/* Services Dropdown */}
               <div className="relative group">
-                <button className="text-[#4E4D4F] hover:text-[#F3782D] px-5 py-2 rounded-lg transition-all duration-200 font-semibold text-[15px] flex items-center space-x-1 hover:bg-orange-50">
+                <button
+                  className="text-[#4E4D4F] hover:text-[#F3782D] px-5 py-2 rounded-lg transition-all duration-200 font-semibold text-[15px] flex items-center space-x-2 hover:bg-orange-50"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  <Layers className="w-4 h-4 text-[#4E4D4F] group-hover:text-[#F3782D]" />
                   <span>Services</span>
                   <ChevronDown className="w-4 h-4 group-hover:rotate-180 transition-transform duration-300" />
                 </button>
@@ -188,12 +195,17 @@ export default function ConstructionNav() {
                     {/* Service list area made scrollable */}
                     <div className="p-3 max-h-[320px] overflow-y-auto">
                       {services.map((service, index) => {
+                        const Icon = service.icon;
                         return (
                           <Link
                             key={index}
                             href={service.href}
                             className="flex items-start space-x-4 px-4 py-3 hover:bg-orange-50 rounded-xl transition-all duration-200 group/item"
                           >
+                            <div className="flex-shrink-0 mt-1">
+                              <Icon className="w-6 h-6 text-[#F3782D]" />
+                            </div>
+
                             <div className="flex-1 pt-0.5">
                               <div className="text-[#4E4D4F] font-bold text-base group-hover/item:text-[#F3782D] transition-colors">
                                 {service.name}
@@ -205,15 +217,13 @@ export default function ConstructionNav() {
                         );
                       })}
                     </div>
-
-                    {/* footer removed as requested */}
                   </div>
                 </div>
               </div>
 
-              {/* Projects now smooth-scroll to #projects when on home */}
               <NavLink href="/#projects" icon={FolderOpen} text="Our Projects" onClick={handleProjectsClick} />
-              <NavLink href="/contact" icon={MessageSquare} text="Contact" />
+              {/* Replaced Contact with Serving Areas */}
+              <NavLink href="/#location" icon={MapPin} text="Serving Areas" onClick={handleLocationClick} />
 
               <Link
                 href="/#quotes"
@@ -237,16 +247,19 @@ export default function ConstructionNav() {
           {/* Mobile Menu */}
           {isOpen && (
             <div className="lg:hidden pb-6 space-y-2 border-t border-gray-200 pt-4 max-h-[calc(100vh-8rem)] overflow-y-auto">
-              {/* Mobile Contact Info */}
+              {/* Mobile Serving Areas CTA (replaces contact block) */}
               <div className="bg-gradient-to-r from-[#4E4D4F] to-[#5E5D5F] rounded-xl p-4 mb-4">
-                <a href="tel:+447340170864" className="flex items-center space-x-3 text-white mb-3">
-                  <Phone className="w-5 h-5 text-[#F3782D]" />
-                  <span className="font-semibold">07340170864</span>
-                </a>
-                <a href="mailto:info@tbkconstruction.co.uk" className="flex items-center space-x-3 text-white">
-                  <Mail className="w-5 h-5 text-[#F3782D]" />
-                  <span className="text-sm">info@tbkconstruction.co.uk</span>
-                </a>
+                <Link
+                  href="/#location"
+                  onClick={(e) => {
+                    handleLocationClick(e as unknown as React.MouseEvent);
+                  }}
+                  className="flex items-center space-x-3 text-white mb-3"
+                >
+                  <MapPin className="w-5 h-5 text-[#F3782D]" />
+                  <span className="font-semibold">Serving Areas</span>
+                </Link>
+                <p className="text-xs text-gray-200">Jump to the full list of boroughs we serve.</p>
               </div>
 
               <Link
@@ -262,7 +275,6 @@ export default function ConstructionNav() {
                 href="/#about"
                 className=" text-[#4E4D4F] hover:text-[#F3782D] hover:bg-orange-50 px-4 py-3 rounded-lg transition-all duration-200 font-semibold flex items-center space-x-3"
                 onClick={(e) => {
-                  // smooth scroll when already on home; otherwise navigate to "/#about"
                   handleAboutClick(e as unknown as React.MouseEvent);
                 }}
               >
@@ -276,13 +288,17 @@ export default function ConstructionNav() {
                   onClick={() => setServicesOpen(!servicesOpen)}
                   className="w-full text-left text-[#4E4D4F] hover:text-[#F3782D] hover:bg-orange-50 px-4 py-3 rounded-lg transition-all duration-200 flex items-center justify-between font-semibold"
                 >
-                  <span>Services</span>
+                  <div className="flex items-center space-x-2">
+                    <Layers className="w-4 h-4 text-[#4E4D4F] group-hover:text-[#F3782D]" />
+                    <span>Services</span>
+                  </div>
                   <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${servicesOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {servicesOpen && (
                   <div className="mt-2 space-y-2 bg-gradient-to-br from-orange-50 to-orange-50/30 rounded-xl p-3 max-h-[40vh] overflow-y-auto">
                     {services.map((service, index) => {
+                      const Icon = service.icon;
                       return (
                         <Link
                           key={index}
@@ -293,6 +309,10 @@ export default function ConstructionNav() {
                             setServicesOpen(false);
                           }}
                         >
+                          <div className="flex-shrink-0">
+                            <Icon className="w-5 h-5 text-[#F3782D]" />
+                          </div>
+
                           <div className="flex-1">
                             <div className="text-[#4E4D4F] font-bold text-sm">{service.name}</div>
                             <div className="text-gray-600 text-xs mt-0.5">{service.description}</div>
@@ -301,7 +321,6 @@ export default function ConstructionNav() {
                         </Link>
                       );
                     })}
-                    {/* "View All Services" removed as requested */}
                   </div>
                 )}
               </div>
@@ -310,7 +329,6 @@ export default function ConstructionNav() {
                 href="/#projects"
                 className=" text-[#4E4D4F] hover:text-[#F3782D] hover:bg-orange-50 px-4 py-3 rounded-lg transition-all duration-200 font-semibold flex items-center space-x-3"
                 onClick={(e) => {
-                  // smooth scroll when on home; otherwise navigate to "/#projects"
                   handleProjectsClick(e as unknown as React.MouseEvent);
                 }}
               >
@@ -318,13 +336,16 @@ export default function ConstructionNav() {
                 <span>Our Projects</span>
               </Link>
 
+              {/* Mobile "Serving Areas" link (replaces Contact) */}
               <Link
-                href="/contact"
+                href="/#location"
                 className=" text-[#4E4D4F] hover:text-[#F3782D] hover:bg-orange-50 px-4 py-3 rounded-lg transition-all duration-200 font-semibold flex items-center space-x-3"
-                onClick={() => setIsOpen(false)}
+                onClick={(e) => {
+                  handleLocationClick(e as unknown as React.MouseEvent);
+                }}
               >
-                <MessageSquare className="w-5 h-5" />
-                <span>Contact</span>
+                <MapPin className="w-5 h-5" />
+                <span>Serving Areas</span>
               </Link>
 
               <Link

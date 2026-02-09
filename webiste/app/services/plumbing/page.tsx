@@ -33,7 +33,7 @@ export default function Page() {
   return (
     <ServiceDetail
       title="Professional Plumbing Services"
-      imageSrc="https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?q=80&w=1600&auto=format&fit=crop"
+      imageSrc="/plumber.jpg"
       summary="Expert plumbing services across London. From emergency repairs to complete bathroom installations – reliable, qualified plumbers available 24/7."
       description="Our experienced, qualified plumbers provide comprehensive plumbing and heating services throughout London, handling everything from dripping taps to complete bathroom refits. Whether you're dealing with an emergency leak in Clapham, need a boiler service in Islington, want a luxury bathroom installed in Richmond, or require drainage work in Lewisham, our skilled team delivers prompt, professional solutions across all London boroughs. We understand plumbing emergencies can't wait – that's why we offer 24/7 emergency call-out service for urgent issues. For planned work, we provide detailed quotes, expert advice, and quality installations using premium materials and the latest techniques. All our plumbers are fully qualified, Gas Safe registered where required, and committed to delivering exceptional workmanship. We specialize in both residential and commercial plumbing, working in all types of London properties from period conversions to modern developments. With transparent pricing, reliable service, and a customer-first approach, we're London's trusted choice for all plumbing needs."
       features={[

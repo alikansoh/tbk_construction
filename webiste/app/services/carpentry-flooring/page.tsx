@@ -33,7 +33,7 @@ export default function Page() {
   return (
     <ServiceDetail
       title="Carpentry & Flooring Installation"
-      imageSrc="https://images.unsplash.com/photo-1615875605825-5eb9bb5d52ac?q=80&w=1600&auto=format&fit=crop"
+      imageSrc="/carpenter.jpg"
       summary="Expert carpentry and flooring installation across London. Bespoke joinery, skilled floor fitting, and high-quality finishing by experienced professionals."
       description="Transform your London property with our professional carpentry and flooring installation services. Whether you need bespoke joinery, fitted doors, skirting and architraves, or high-quality floor fitting — carpets, hardwood, laminate, vinyl, and tiles — our skilled team delivers exceptional results across all London boroughs. We work with premium suppliers to offer an extensive range of materials to suit every style and budget. From initial consultation and design through to expert installation and finishing, we manage every detail of your project. Our experienced joiners and fitters understand the challenges of London properties — restricted access, tight schedules, and minimising disruption. Our efficient service includes furniture moving, subfloor and substrate preparation, precise fitting, on-site finishing, and thorough cleanup, leaving you with beautiful, durable results and complete peace of mind."
       features={[

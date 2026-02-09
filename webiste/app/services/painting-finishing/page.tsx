@@ -33,7 +33,7 @@ export default function Page() {
   return (
     <ServiceDetail
       title="Painting & Decorating Services"
-      imageSrc="/painting.jpg"
+      imageSrc="/painter.jpg"
       summary="Professional painting and decorating across London. Transform your property with expert painters delivering flawless finishes and lasting quality."
       description="Our skilled painters and decorators bring new life to London properties with exceptional craftsmanship and attention to detail. Whether you need a fresh coat of paint for a Chelsea townhouse, period restoration in Hampstead, commercial painting in Shoreditch, or complete decorating services for a Wimbledon home, our experienced team delivers outstanding results across all London boroughs. We specialize in both interior and exterior painting, using premium paints and materials for durable, beautiful finishes that stand the test of time. From initial color consultation and surface preparation through to final finishing touches, we manage every aspect of your painting project with professionalism and care. Our decorators are experienced working in occupied properties, understanding the importance of cleanliness, punctuality, and minimal disruption. We work with all property types including period homes, modern developments, rental properties, and commercial spaces. With meticulous preparation, quality materials, and skilled application, we deliver painting and decorating services that exceed expectations and add genuine value to your London property."
       features={[
