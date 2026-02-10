@@ -52,14 +52,14 @@ const PROJECTS: Project[] = [
     images: ['cabinet.jpeg']
   },
   {
-    title: 'contemporary kitchen refurbishment',
+    title: ' kitchen refurbishment',
     category: 'Kitchen Remodel',
     description: 'Contemporary kitchen refurbishment in Harrow with matte-black handleless base units, bespoke extractor hood, integrated stainless-steel ovens and newly installed oak herringbone flooring. Includes supply & fit of cabinetry, electrical for recessed LED downlights and appliance circuits, plumbing for a new sink, and floor sanding & finishing. Completed in 8 weeks.',
     stats: { duration: '8 weeks', budget: '£18,500' },
     images: ['kitchen.jpeg']
   },
   {
-    title: 'underfloor heating & oak floor installation',
+    title: 'underfloor heating',
     category: 'Flooring & Heating',
     description: 'Supply and install reflective foil underlay and electric foil heating mats beneath engineered oak flooring. Work includes taped seams, careful mat placement through narrow runs and room areas, preparation of plastered walls, cable management and staged laying of oak planks. Ideal for homeowners seeking efficient electric underfloor heating combined with a premium herringbone oak finish .',
     stats: { duration: '3 days', budget: '£1,800' },
@@ -70,7 +70,14 @@ const PROJECTS: Project[] = [
 /** helpers **/
 const isVideoFile = (src?: string) => !!src && /\.(mp4|webm|mov|ogg)$/i.test(src);
 
-/** Truncate helper - returns approximately the first half of the content by words */
+/** Truncate helper - returns approximately the first 15 words for carousel preview */
+const truncatePreview = (text: string, wordLimit: number = 15) => {
+  const words = text.trim().split(/\s+/);
+  if (words.length <= wordLimit) return { text, isTruncated: false };
+  return { text: words.slice(0, wordLimit).join(' '), isTruncated: true };
+};
+
+/** Truncate helper - returns approximately the first half of the content by words for modal (optional) */
 const truncateHalfWords = (text: string) => {
   const words = text.trim().split(/\s+/);
   if (words.length <= 8) return text; // short copy - don't truncate
@@ -228,19 +235,12 @@ export default function ProjectsSection(): JSX.Element {
     const el = document.getElementById('quotes') as HTMLElement | null;
 
     if (el) {
-      // Smooth scroll to the element
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-      // Focus the element for accessibility
       try {
-        el.setAttribute('tabindex', '-1'); // make it focusable if not naturally
+        el.setAttribute('tabindex', '-1');
         el.focus({ preventScroll: true });
-      } catch (e) {
-        // fallback: ignore focus errors
-        // console.warn('Could not focus element', e);
-      }
+      } catch (e) {}
     } else {
-      // Fallback: set hash to allow bookmarking/navigation
       if (typeof window !== 'undefined') window.location.hash = '#quotes';
     }
   };
@@ -248,15 +248,12 @@ export default function ProjectsSection(): JSX.Element {
   // OPEN QUOTE: if modal open, defer until modal exits; otherwise dispatch event immediately
   const handleGoToQuote = () => {
     if (isModalOpen) {
-      // mark that we want to open the quote modal after this modal unmounts, then close
       pendingOpenModalRef.current = true;
       closeModal();
     } else {
-      // Immediately dispatch the global event to open the same modal (HeroInquiry listens)
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('open-quote-modal'));
       }
-      // Also scroll to the quotes section for context
       doScrollToQuote();
     }
   };
@@ -358,10 +355,8 @@ export default function ProjectsSection(): JSX.Element {
             onMouseLeave={() => setIsAutoPlaying(true)}
           >
             <AnimatePresence mode="wait" custom={direction} onExitComplete={() => {
-              // if a scroll was requested while modal was open, do it now
               if (pendingScrollRef.current) {
                 pendingScrollRef.current = false;
-                // small extra tick to ensure layout settled
                 setTimeout(doScrollToQuote, 20);
               }
             }}>
@@ -383,7 +378,6 @@ export default function ProjectsSection(): JSX.Element {
                   {/* Image Section */}
                   <div className="relative h-3/5 sm:h-2/3 bg-slate-800">
                     <div className="absolute inset-0 bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 flex items-center justify-center">
-                      {/* Render project's hero media (first image/video) */}
                       <Media
                         src={currentProject.images && currentProject.images[0]}
                         alt={`${currentProject.title} hero`}
@@ -393,12 +387,10 @@ export default function ProjectsSection(): JSX.Element {
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent"></div>
 
-                    {/* Category Badge */}
                     <div className="absolute top-4 left-4 sm:top-6 sm:left-6 bg-gradient-to-r from-orange-500 to-red-500 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-[0_0_30px_rgba(249,115,22,0.6)]">
                       <span className="text-xs sm:text-sm font-bold text-white">{currentProject.category}</span>
                     </div>
 
-                    {/* Project Number */}
                     <div className="absolute top-4 right-4 sm:top-6 sm:right-6 bg-white/10 backdrop-blur-md border border-white/20 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full overflow-hidden">
                       <div className="flex items-center gap-1">
                         <AnimatePresence mode="wait">
@@ -422,58 +414,59 @@ export default function ProjectsSection(): JSX.Element {
                   </div>
 
                   {/* Content Section */}
-                 <div className="relative h-2/5 sm:h-1/3 p-4 sm:p-6 lg:p-8 flex flex-col justify-center">
-  <div className="flex flex-col gap-4 sm:gap-6">
-    <div>
-      <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-white mb-2 leading-tight">
-        {currentProject.title}
-      </h3>
+                  <div className="relative h-2/5 sm:h-1/3 p-4 sm:p-6 lg:p-8 flex flex-col">
+                    {/* Text content with flexible height but limited */}
+                    <div className="flex-1 min-h-0 flex flex-col mb-3">
+                      <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-white mb-2 leading-tight flex-shrink-0">
+                        {currentProject.title}
+                      </h3>
 
-      {/* Truncated description with "Continue reading" that opens modal */}
-      <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-        {(() => {
-          const full = currentProject.description || '';
-          // compute truncated by words (approx half)
-          const truncated = truncateHalfWords(full);
-          const shouldTruncate = truncated !== full;
-          return (
-            <>
-              {shouldTruncate ? (
-                <>
-                  <span>{truncated}…</span>
-                  <button
-                    onClick={() => openProjectModal(currentProject, currentIndex)}
-                    className="ml-2 text-orange-300 underline font-semibold text-sm"
-                    aria-label={`Continue reading about ${currentProject.title}`}
-                  >
-                    Continue reading
-                  </button>
-                </>
-              ) : (
-                <span>{full}</span>
-              )}
-            </>
-          );
-        })()}
-      </p>
-    </div>
+                      {/* Truncated preview description with line-clamp */}
+                      <div className="flex-1 min-h-0 overflow-hidden">
+                        <p className="text-slate-300 text-sm sm:text-base leading-relaxed line-clamp-2 sm:line-clamp-3">
+                          {(() => {
+                            const full = currentProject.description || '';
+                            const { text: preview, isTruncated } = truncatePreview(full, 15);
+                            return (
+                              <>
+                                <span>{preview}</span>
+                                {isTruncated && <span>…</span>}
+                              </>
+                            );
+                          })()}
+                        </p>
+                        {(() => {
+                          const full = currentProject.description || '';
+                          const { isTruncated } = truncatePreview(full, 15);
+                          return isTruncated ? (
+                            <button
+                              onClick={() => openProjectModal(currentProject, currentIndex)}
+                              className="mt-1 text-orange-300 underline font-semibold text-sm hover:text-orange-400 transition-colors inline-block"
+                              aria-label={`Read more about ${currentProject.title}`}
+                            >
+                              Read more
+                            </button>
+                          ) : null;
+                        })()}
+                      </div>
+                    </div>
 
-    <div>
-      <motion.button
-        onClick={() => openProjectModal(currentProject, currentIndex)}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-2 sm:py-2.5 lg:py-3 px-3 sm:px-4 rounded-lg shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] transition-all flex items-center justify-center gap-2"
-      >
-        <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-        </svg>
-        <span className="text-xs sm:text-sm lg:text-base truncate">View Project ({currentProject.images.length} photos)</span>
-      </motion.button>
-    </div>
-  </div>
-</div>
+                    {/* Button - always visible at bottom */}
+                    <div className="flex-shrink-0">
+                      <motion.button
+                        onClick={() => openProjectModal(currentProject, currentIndex)}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-2 sm:py-2.5 lg:py-3 px-3 sm:px-4 rounded-lg shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] transition-all flex items-center justify-center gap-2"
+                      >
+                        <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        <span className="text-xs sm:text-sm lg:text-base truncate">View Full Project ({currentProject.images.length} {currentProject.images.length === 1 ? 'photo' : 'photos'})</span>
+                      </motion.button>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             </AnimatePresence>
@@ -515,7 +508,6 @@ export default function ProjectsSection(): JSX.Element {
                     }`}
                     aria-label={`Go to ${project.title}`}
                   >
-                    {/* Thumbnail image (Image uses fill inside absolute wrapper) */}
                     <div className="absolute inset-0">
                       <Image
                         src={(project.images && (project.images[0].startsWith('/') ? project.images[0] : `/${project.images[0]}`)) || ''}
@@ -594,7 +586,7 @@ export default function ProjectsSection(): JSX.Element {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="relative bg-white/5 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-white/10 hover;border-orange-400/30 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_15px_50px_rgba(249,115,22,0.2)] transition-all duration-300 group text-center"
+              className="relative bg-white/5 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-white/10 hover:border-orange-400/30 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_15px_50px_rgba(249,115,22,0.2)] transition-all duration-300 group text-center"
             >
               <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center border border-orange-400/30 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(249,115,22,0.4)] transition-all">
                 <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -640,13 +632,11 @@ export default function ProjectsSection(): JSX.Element {
 
       {/* Project Modal */}
       <AnimatePresence onExitComplete={() => {
-        // If we wanted to open the quote modal after this modal closed, do it now
         if (pendingOpenModalRef.current) {
           pendingOpenModalRef.current = false;
           if (typeof window !== 'undefined') {
             window.dispatchEvent(new CustomEvent('open-quote-modal'));
           }
-          // Keep previous behavior to scroll into view as context
           setTimeout(doScrollToQuote, 20);
         }
       }}>
@@ -775,6 +765,8 @@ export default function ProjectsSection(): JSX.Element {
                     <h3 className="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-3 sm:mb-4 leading-tight">
                       {selectedProject.title}
                     </h3>
+                    
+                    {/* Full description in modal */}
                     <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
                       {selectedProject.description}
                     </p>
@@ -874,6 +866,21 @@ export default function ProjectsSection(): JSX.Element {
         /* Smooth touch scrolling on mobile */
         .scrollbar-hide {
           -webkit-overflow-scrolling: touch;
+        }
+
+        /* Line clamp utilities for text truncation */
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        
+        .line-clamp-3 {
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
       `}</style>
     </section>
