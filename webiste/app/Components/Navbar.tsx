@@ -159,10 +159,10 @@ export default function ConstructionNav() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-40 lg:h-50">
+          <div className="flex justify-between items-center h-24 lg:h-50">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-4 group">
-              <div className="relative w-40 h-40 lg:w-50 lg:h-50 rounded-lg p-2 group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+              <div className="relative w-24 h-24 lg:w-50 lg:h-50 rounded-lg p-2 group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
                 <Image src="/logo.png" alt="BuildPro Construction" fill className="object-contain p-1" priority />
               </div>
             </Link>
@@ -246,7 +246,7 @@ export default function ConstructionNav() {
 
           {/* Mobile Menu */}
           {isOpen && (
-            <div className="lg:hidden pb-6 space-y-2 border-t border-gray-200 pt-4 max-h-[calc(100vh-8rem)] overflow-y-auto">
+            <div className="lg:hidden pb-6 space-y-2 border-t border-gray-200 pt-4 max-h-[calc(100vh-6rem)] overflow-y-auto">
               {/* Mobile Serving Areas CTA (replaces contact block) */}
               <div className="bg-gradient-to-r from-[#4E4D4F] to-[#5E5D5F] rounded-xl p-4 mb-4">
                 <Link
