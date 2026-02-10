@@ -658,10 +658,7 @@ function AboutUsSectionComponent() {
                 )}
               </div>
 
-              {/* Footer Note */}
-              <p className="text-xs text-slate-400 mt-6 pt-4 border-t border-white/10">
-                Reviews from real clients — names abbreviated for privacy.
-              </p>
+             
             </motion.div>
           </div>
         </motion.div>
