@@ -54,7 +54,7 @@ const PROJECTS: Project[] = [
   {
     title: 'contemporary kitchen refurbishment',
     category: 'Kitchen Remodel',
-    description: 'Contemporary kitchen refurbishment in Harrow with matte-black handleless base units, bespoke extractor hood, integrated stainless-steel ovens and newly installed oak herringbone flooring. Includes supply & fit of cabinetry, electrical for recessed LED downlights and appliance circuits, plumbing for a new sink, and floor sanding & finishing. Completed in 8 weeks — contact TBK Construction for professional kitchen renovations and bespoke joinery across Greater London.',
+    description: 'Contemporary kitchen refurbishment in Harrow with matte-black handleless base units, bespoke extractor hood, integrated stainless-steel ovens and newly installed oak herringbone flooring. Includes supply & fit of cabinetry, electrical for recessed LED downlights and appliance circuits, plumbing for a new sink, and floor sanding & finishing. Completed in 8 weeks.',
     stats: { duration: '8 weeks', budget: '£18,500' },
     images: ['kitchen.jpeg']
   },
