@@ -45,30 +45,38 @@ const PROJECTS: Project[] = [
     images: ["bedroom.jpeg","bedroom2.jpeg"]
   },
   {
-    title: 'Loft Conversion',
+    title: 'new cabinet design',
     category: 'Conversion',
-    description: 'Transformed unused loft into beautiful master bedroom suite',
-    stats: { duration: '10 weeks', budget: '£52k' },
-    images: ['loft1.jpg', 'loft2.jpg', 'loft3.jpg']
+    description: 'Bespoke oak media cabinet and floating storage system installed in Harrow. Custom joinery with concealed TV mounting, integrated warm LED accent lighting, soft‑close doors and tailored shelving to maximise storage and display. Completed in 10 weeks — contact TBK Construction for free quotes on bespoke cabinets and living‑room joinery across Greater London.',
+    stats: { duration: '1weeks', budget: '£500' },
+    images: ['cabinet.jpeg']
   },
   {
-    title: 'Victorian Restoration',
-    category: 'Renovation',
-    description: 'Period property restoration preserving original features',
-    stats: { duration: '16 weeks', budget: '£78k' },
-    images: ['victorian1.jpg', 'victorian2.jpg', 'victorian3.jpg', 'victorian4.jpg']
+    title: 'contemporary kitchen refurbishment',
+    category: 'Kitchen Remodel',
+    description: 'Contemporary kitchen refurbishment in Harrow with matte-black handleless base units, bespoke extractor hood, integrated stainless-steel ovens and newly installed oak herringbone flooring. Includes supply & fit of cabinetry, electrical for recessed LED downlights and appliance circuits, plumbing for a new sink, and floor sanding & finishing. Completed in 8 weeks — contact TBK Construction for professional kitchen renovations and bespoke joinery across Greater London.',
+    stats: { duration: '8 weeks', budget: '£18,500' },
+    images: ['kitchen.jpeg']
   },
   {
-    title: 'Modern Open Plan Living',
-    category: 'Interior',
-    description: 'Contemporary open-plan design with seamless indoor-outdoor flow',
-    stats: { duration: '8 weeks', budget: '£42k' },
-    images: ['openplan1.jpg', 'openplan2.jpg', 'openplan3.jpg']
+    title: 'underfloor heating & oak floor installation',
+    category: 'Flooring & Heating',
+    description: 'Supply and install reflective foil underlay and electric foil heating mats beneath engineered oak flooring. Work includes taped seams, careful mat placement through narrow runs and room areas, preparation of plastered walls, cable management and staged laying of oak planks. Ideal for homeowners seeking efficient electric underfloor heating combined with a premium herringbone oak finish .',
+    stats: { duration: '3 days', budget: '£1,800' },
+    images: ['under1.jpeg', 'under2.jpeg', 'under3.jpeg']
   }
 ];
 
 /** helpers **/
 const isVideoFile = (src?: string) => !!src && /\.(mp4|webm|mov|ogg)$/i.test(src);
+
+/** Truncate helper - returns approximately the first half of the content by words */
+const truncateHalfWords = (text: string) => {
+  const words = text.trim().split(/\s+/);
+  if (words.length <= 8) return text; // short copy - don't truncate
+  const half = Math.ceil(words.length / 2);
+  return words.slice(0, half).join(' ');
+};
 
 /**
  * Media component - unified:
@@ -420,8 +428,33 @@ export default function ProjectsSection(): JSX.Element {
       <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-white mb-2 leading-tight">
         {currentProject.title}
       </h3>
+
+      {/* Truncated description with "Continue reading" that opens modal */}
       <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-        {currentProject.description}
+        {(() => {
+          const full = currentProject.description || '';
+          // compute truncated by words (approx half)
+          const truncated = truncateHalfWords(full);
+          const shouldTruncate = truncated !== full;
+          return (
+            <>
+              {shouldTruncate ? (
+                <>
+                  <span>{truncated}…</span>
+                  <button
+                    onClick={() => openProjectModal(currentProject, currentIndex)}
+                    className="ml-2 text-orange-300 underline font-semibold text-sm"
+                    aria-label={`Continue reading about ${currentProject.title}`}
+                  >
+                    Continue reading
+                  </button>
+                </>
+              ) : (
+                <span>{full}</span>
+              )}
+            </>
+          );
+        })()}
       </p>
     </div>
 
@@ -561,7 +594,7 @@ export default function ProjectsSection(): JSX.Element {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="relative bg-white/5 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-white/10 hover:border-orange-400/30 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_15px_50px_rgba(249,115,22,0.2)] transition-all duration-300 group text-center"
+              className="relative bg-white/5 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-white/10 hover;border-orange-400/30 shadow-[0_8px_32px_rgba(0,0,0,0.3)] hover:shadow-[0_15px_50px_rgba(249,115,22,0.2)] transition-all duration-300 group text-center"
             >
               <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center border border-orange-400/30 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(249,115,22,0.4)] transition-all">
                 <svg className="w-5 h-5 sm:w-6 sm:h-6 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# Sitemap location for crawlers
+Sitemap: https://tbkconstruction.co.uk/sitemap.xml
+Host: https://tbkconstruction.co.uk

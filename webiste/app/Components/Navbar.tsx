@@ -159,10 +159,12 @@ export default function ConstructionNav() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-24 lg:h-50">
+          {/* Increased height on tablet (md) and larger for more breathing room */}
+          <div className="flex justify-between items-center h-24 md:h-32 lg:h-44">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-4 group">
-              <div className="relative w-24 h-24 lg:w-50 lg:h-50 rounded-lg p-2 group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+              {/* Logo scales up on md and lg */}
+              <div className="relative w-28 h-28 md:w-40 md:h-40 lg:w-56 lg:h-56 rounded-lg p-2 group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
                 <Image src="/logo.png" alt="BuildPro Construction" fill className="object-contain p-1" priority />
               </div>
             </Link>
