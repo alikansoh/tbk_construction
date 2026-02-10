@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { motion, Variants } from 'framer-motion';
+import { sendEmailBrevoClient } from '../lib/sendEmailBrevoClient';
+import { sendConfirmationClient } from '../lib/sendConfirmationClient';
 
 type ServiceDetailProps = {
   title: string;
@@ -52,6 +54,7 @@ export default function ServiceDetail({
   const [phone, setPhone] = useState('');
   const [postcode, setPostcode] = useState('');
   const [message, setMessage] = useState('');
+  const [email, setEmail] = useState(''); // optional, used for confirmation
   const [submitting, setSubmitting] = useState(false);
   const [formMessage, setFormMessage] = useState('');
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
@@ -61,23 +64,53 @@ export default function ServiceDetail({
     setSubmitting(true);
 
     try {
-      const res = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ service: title, name, phone, postcode, message }),
-      });
+      // 1) send admin email via Brevo helper
+      const adminPayload = {
+        name: name.trim(),
+        email: email.trim() || undefined,
+        phone: phone.trim(),
+        postcode: postcode.trim(),
+        service: title,
+        message: message.trim() || undefined,
+        isEmergency: false,
+      };
 
-      if (res.ok) {
-        setFormMessage('Thank you! We will contact you within 24 hours.');
-        setName('');
-        setPhone('');
-        setPostcode('');
-        setMessage('');
-      } else {
-        setFormMessage('Something went wrong. Please try again.');
+      const adminRes = await sendEmailBrevoClient(adminPayload);
+
+      if (adminRes.status !== 'ok') {
+        setFormMessage(adminRes.error || 'Failed to send enquiry. Please try again later.');
+        setSubmitting(false);
+        return;
       }
-    } catch (error) {
-      setFormMessage('Error submitting form. Please try again.');
+
+      // 2) send confirmation to customer (only if they provided an email)
+      if (email.trim()) {
+        const confirmPayload = {
+          email: email.trim(),
+          name: name.trim(),
+          service: title,
+          postcode: postcode.trim(),
+          isEmergency: false,
+        };
+
+        // fire-and-forget but await to detect failure if you want
+        const confirmRes = await sendConfirmationClient(confirmPayload);
+        if (confirmRes.status !== 'ok') {
+          // confirmation failed — we won't block success, but show a small note
+          // (you can log this server-side if desired)
+          console.warn('Confirmation email failed:', confirmRes.error);
+        }
+      }
+
+      // success UX
+      setFormMessage('We have received your enquiry — we will reply to you as soon as possible.');
+      setName('');
+      setPhone('');
+      setPostcode('');
+      setMessage('');
+      setEmail('');
+    } catch (err) {
+      setFormMessage(err instanceof Error ? err.message : String(err));
     } finally {
       setSubmitting(false);
     }
@@ -596,7 +629,7 @@ export default function ServiceDetail({
                   </motion.div>
                   
                   <h3 className="text-2xl lg:text-3xl font-bold text-white mb-2 tracking-tight">Quick Contact</h3>
-                  <p className="text-sm text-slate-300/80 font-light">Get a free quote in 24 hours</p>
+                  <p className="text-sm text-slate-300/80 font-light">Get a free callback very fast response</p>
                 </div>
 
                 {/* Form - Simplified */}
@@ -613,6 +646,20 @@ export default function ServiceDetail({
                       required
                       className="w-full px-4 py-3.5 rounded-xl bg-slate-900/50 backdrop-blur-sm border border-slate-700/50 text-white placeholder:text-slate-500 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/30 transition-all font-light"
                       placeholder="John Smith"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">
+                      Email (optional)
+                    </label>
+                    <input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full px-4 py-3.5 rounded-xl bg-slate-900/50 backdrop-blur-sm border border-slate-700/50 text-white placeholder:text-slate-500 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/30 transition-all font-light"
+                      placeholder="you@example.com"
                     />
                   </div>
 

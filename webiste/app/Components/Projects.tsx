@@ -1,10 +1,21 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, JSX } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from 'framer-motion';
 
-const PROJECTS = [
+interface Project {
+  title: string;
+  category: string;
+  description: string;
+  stats: {
+    duration: string;
+    budget: string;
+  };
+  images: string[];
+}
+
+const PROJECTS: Project[] = [
   {
     title: 'Modern Kitchen Renovation',
     category: 'Kitchen',
@@ -19,29 +30,20 @@ const PROJECTS = [
     stats: { duration: '2 days', budget: '£500' },
     images: ['room.jpeg']
   },
-  
   {
-    "title": "Modern Room Redesign",
-    "category": "Interior Design",
-    "description": "A full room redesign featuring freshly painted built-in wardrobes, soft neutral wall finishes, modern lighting, and minimalistic décor to enhance brightness and space.",
-    "stats": {
-      "duration": "3 weeks",
-      "budget": "£12k"
-    },
-    "images": ["room2.jpeg"]
+    title: "Modern Room Redesign",
+    category: "Interior Design",
+    description: "A full room redesign featuring freshly painted built-in wardrobes, soft neutral wall finishes, modern lighting, and minimalistic décor to enhance brightness and space.",
+    stats: { duration: "3 weeks", budget: "£12k" },
+    images: ["room2.jpeg"]
   },
-  
   {
-    "title": "Bedroom Remodelling ",
-    "category": "Bedroom",
-    "description": "A complete bedroom remodelling project featuring new premium wood flooring and custom-built floor-to-ceiling wardrobes, finished in a modern neutral palette for a clean and elegant look.",
-    "stats": {
-      "duration": "4 weeks",
-      "budget": "£10k"
-    },
-    "images": ["bedroom.jpeg","bedroom2.jpeg"]
-  }
-  ,
+    title: "Bedroom Remodelling",
+    category: "Bedroom",
+    description: "A complete bedroom remodelling project featuring new premium wood flooring and custom-built floor-to-ceiling wardrobes, finished in a modern neutral palette for a clean and elegant look.",
+    stats: { duration: "4 weeks", budget: "£10k" },
+    images: ["bedroom.jpeg","bedroom2.jpeg"]
+  },
   {
     title: 'Loft Conversion',
     category: 'Conversion',
@@ -66,12 +68,26 @@ const PROJECTS = [
 ];
 
 /** helpers **/
-const isVideoFile = (src) => /\.(mp4|webm|mov|ogg)$/i.test(src);
+const isVideoFile = (src?: string) => !!src && /\.(mp4|webm|mov|ogg)$/i.test(src);
 
 /**
  * Media component - unified:
  */
-const Media = ({ src, alt = '', className = '', hero = false, controls = false, asThumbnail = false }) => {
+const Media = ({
+  src,
+  alt = '',
+  className = '',
+  hero = false,
+  controls = false,
+  asThumbnail = false,
+}: {
+  src?: string;
+  alt?: string;
+  className?: string;
+  hero?: boolean;
+  controls?: boolean;
+  asThumbnail?: boolean;
+}) => {
   if (!src) return null;
   const path = src.startsWith('/') ? src : `/${src}`;
   const isVideo = isVideoFile(path);
@@ -121,20 +137,20 @@ const Media = ({ src, alt = '', className = '', hero = false, controls = false, 
 };
 
 // Animated Counter Component
-const AnimatedCounter = ({ value, duration = 1000 }) => {
-  const [count, setCount] = useState(0);
-  const countRef = useRef(0);
+const AnimatedCounter = ({ value, duration = 1000 }: { value: string | number; duration?: number }) => {
+  const [count, setCount] = useState<number>(0);
+  const countRef = useRef<number>(0);
 
   useEffect(() => {
     const startTime = Date.now();
-    const endValue = typeof value === 'string' ? parseInt(value.replace(/\D/g, '')) : value;
+    const endValue = typeof value === 'string' ? parseInt(String(value).replace(/\D/g, '')) : Number(value);
 
     const animate = () => {
       const now = Date.now();
       const progress = Math.min((now - startTime) / duration, 1);
 
       const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-      const current = Math.floor(easeOutQuart * endValue);
+      const current = Math.floor(easeOutQuart * (isNaN(endValue) ? 0 : endValue));
 
       countRef.current = current;
       setCount(current);
@@ -148,24 +164,25 @@ const AnimatedCounter = ({ value, duration = 1000 }) => {
   }, [value, duration]);
 
   if (typeof value === 'string') {
-    if (value.includes('+')) return `${count}+`;
-    if (value.includes('%')) return `${count}%`;
-    if (value.includes('/')) return value; // e.g. "24/7"
+    if (value.includes('+')) return <>{count}+ </>;
+    if (value.includes('%')) return <>{count}% </>;
+    if (value.includes('/')) return <>{value}</>;
   }
 
-  return count;
+  return <>{count}</>;
 };
 
-export default function ProjectsSection() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [direction, setDirection] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+export default function ProjectsSection(): JSX.Element {
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [direction, setDirection] = useState<number>(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState<boolean>(true);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
 
-  // ref to indicate a scroll should happen once modal has fully exited
-  const pendingScrollRef = useRef(false);
+  // refs to handle deferred actions
+  const pendingScrollRef = useRef<boolean>(false);
+  const pendingOpenModalRef = useRef<boolean>(false);
 
   const nextSlide = () => {
     setDirection(1);
@@ -177,12 +194,12 @@ export default function ProjectsSection() {
     setCurrentIndex((prev) => (prev - 1 + PROJECTS.length) % PROJECTS.length);
   };
 
-  const goToSlide = (index) => {
+  const goToSlide = (index: number) => {
     setDirection(index > currentIndex ? 1 : -1);
     setCurrentIndex(index);
   };
 
-  const openProjectModal = (project, index) => {
+  const openProjectModal = (project: Project, index: number) => {
     setSelectedProject(project);
     setCurrentImageIndex(0);
     setIsModalOpen(true);
@@ -199,36 +216,39 @@ export default function ProjectsSection() {
   // doScroll function used by both immediate and deferred flows
   const doScrollToQuote = () => {
     if (typeof document === 'undefined') return;
-  
-    const el = document.getElementById('quotes');
-  
+
+    const el = document.getElementById('quotes') as HTMLElement | null;
+
     if (el) {
       // Smooth scroll to the element
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  
+
       // Focus the element for accessibility
       try {
         el.setAttribute('tabindex', '-1'); // make it focusable if not naturally
         el.focus({ preventScroll: true });
       } catch (e) {
         // fallback: ignore focus errors
-        console.warn('Could not focus element', e);
+        // console.warn('Could not focus element', e);
       }
     } else {
       // Fallback: set hash to allow bookmarking/navigation
-      window.location.hash = '#quotes';
+      if (typeof window !== 'undefined') window.location.hash = '#quotes';
     }
   };
-  
 
-  // CLOSE MODAL (if open) and scroll to #quote reliably using onExitComplete
+  // OPEN QUOTE: if modal open, defer until modal exits; otherwise dispatch event immediately
   const handleGoToQuote = () => {
     if (isModalOpen) {
-      // mark that we want to scroll after modal unmounts, then close modal
-      pendingScrollRef.current = true;
+      // mark that we want to open the quote modal after this modal unmounts, then close
+      pendingOpenModalRef.current = true;
       closeModal();
     } else {
-      // modal not open — scroll immediately
+      // Immediately dispatch the global event to open the same modal (HeroInquiry listens)
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('open-quote-modal'));
+      }
+      // Also scroll to the quotes section for context
       doScrollToQuote();
     }
   };
@@ -255,7 +275,7 @@ export default function ProjectsSection() {
   }, [currentIndex, isAutoPlaying]);
 
   const slideVariants = {
-    enter: (direction) => ({
+    enter: (direction: number) => ({
       x: direction > 0 ? '100%' : '-100%',
       opacity: 0,
       scale: 0.98,
@@ -265,7 +285,7 @@ export default function ProjectsSection() {
       opacity: 1,
       scale: 1,
     },
-    exit: (direction) => ({
+    exit: (direction: number) => ({
       x: direction > 0 ? '-100%' : '100%',
       opacity: 0,
       scale: 0.98,
@@ -586,7 +606,17 @@ export default function ProjectsSection() {
       </div>
 
       {/* Project Modal */}
-      <AnimatePresence>
+      <AnimatePresence onExitComplete={() => {
+        // If we wanted to open the quote modal after this modal closed, do it now
+        if (pendingOpenModalRef.current) {
+          pendingOpenModalRef.current = false;
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('open-quote-modal'));
+          }
+          // Keep previous behavior to scroll into view as context
+          setTimeout(doScrollToQuote, 20);
+        }
+      }}>
         {isModalOpen && selectedProject && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -660,7 +690,7 @@ export default function ProjectsSection() {
 
                   {/* Thumbnail Grid */}
                   <div className="grid grid-cols-4 gap-2">
-                    {selectedProject.images.map((img, index) => {
+                    {selectedProject.images.map((img: string, index: number) => {
                       const actualSrc = img.startsWith('/') ? img : `/${img}`;
                       const video = isVideoFile(img);
                       return (

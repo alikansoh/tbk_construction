@@ -1,4 +1,3 @@
-// Updated AboutUsSectionComponent with smoother Framer Motion animations
 "use client";
 
 import React, { useCallback, memo } from "react";
@@ -133,9 +132,10 @@ function AboutUsSectionComponent() {
     },
   };
 
+  // Dispatch global event to open the same modal in HeroInquiry
   const handlePrimaryClick = useCallback(() => {
     if (typeof window === "undefined") return;
-    window.location.href = window.innerWidth >= 1024 ? "#quotes" : "/contact";
+    window.dispatchEvent(new CustomEvent('open-quote-modal'));
   }, []);
 
   return (
