@@ -15,7 +15,6 @@ import {
   Droplet,
   Info,
   FolderOpen,
-  MessageSquare,
   FileText,
   Clock,
   LucideIcon,
@@ -123,6 +122,17 @@ export default function ConstructionNav() {
     setIsOpen(false);
     setServicesOpen(false);
   }
+
+  // Open quote modal (dispatch event HeroInquiry listens for)
+  const openQuoteModal = () => {
+    // close mobile menu first
+    setIsOpen(false);
+    setServicesOpen(false);
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('open-quote-modal'));
+    }
+  };
 
   return (
     <>
@@ -350,14 +360,16 @@ export default function ConstructionNav() {
                 <span>Serving Areas</span>
               </Link>
 
-              <Link
-                href="/#quotes"
-                className=" bg-gradient-to-r from-[#F3782D] to-[#e86820] text-white px-4 py-4 rounded-xl text-center font-bold hover:shadow-lg transition-all duration-200 mt-4 flex items-center justify-center space-x-2"
-                onClick={() => setIsOpen(false)}
+              {/* -> MOBILE: open modal instead of navigating */}
+              <button
+                type="button"
+                onClick={openQuoteModal}
+                className=" bg-gradient-to-r from-[#F3782D] to-[#e86820] text-white px-4 py-4 rounded-xl text-center font-bold hover:shadow-lg transition-all duration-200 mt-4 flex items-center justify-center space-x-2 w-full"
+                aria-label="Open quote request modal"
               >
                 <FileText className="w-5 h-5" />
                 <span>Get Free Quote</span>
-              </Link>
+              </button>
             </div>
           )}
         </div>
